@@ -4,6 +4,7 @@ import okio.Buffer
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
+
 class TestMessagePackWriter {
 
     @Test
@@ -20,10 +21,6 @@ class TestMessagePackWriter {
         // Then fix string a5 with size of 5 bytes ( Stuff ) 53 74 75 66 66
 
         assertEquals("81a7746f7070696e67a55374756666", msgPackString.hex())
-    }
-
-    class Pizza {
-        var topping = "Stuff"
     }
 
     @Test
@@ -54,9 +51,6 @@ class TestMessagePackWriter {
         assertEquals("82a773747566666564c3a7746f7070696e67a55374756666", msgPackString.hex())
     }
 
-    class PizzaPlus {
-        var topping = "Stuff"
-        var stuffed = true
-    }
+
 }
 

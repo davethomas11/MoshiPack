@@ -35,7 +35,7 @@ class MsgpackWriter(private val sink: BufferedSink) : JsonWriter() {
             }
         }
         beforeValue()
-        currentBuffer.writeByte(MsgpackFormat.NIL)
+        currentBuffer.writeByte(MsgpackFormat.NIL.toInt())
         pathIndices[currentIndex]++
         return this
     }
@@ -55,7 +55,7 @@ class MsgpackWriter(private val sink: BufferedSink) : JsonWriter() {
     override fun value(value: Boolean): JsonWriter {
         writeDeferredName()
         beforeValue()
-        currentBuffer.writeByte(if (value) MsgpackFormat.TRUE else MsgpackFormat.FALSE)
+        currentBuffer.writeByte(if (value) MsgpackFormat.TRUE.toInt() else MsgpackFormat.FALSE.toInt())
         pathIndices[currentIndex]++
         return this
     }
@@ -75,11 +75,11 @@ class MsgpackWriter(private val sink: BufferedSink) : JsonWriter() {
         beforeValue()
         when (value) {
             in Float.MIN_VALUE..Float.MAX_VALUE -> {
-                currentBuffer.writeByte(MsgpackFormat.FLOAT_32)
+                currentBuffer.writeByte(MsgpackFormat.FLOAT_32.toInt())
                 currentBuffer.writeInt(java.lang.Float.floatToIntBits(value.toFloat()))
             }
             in Double.MIN_VALUE..Double.MAX_VALUE -> {
-                currentBuffer.writeByte(MsgpackFormat.FLOAT_64)
+                currentBuffer.writeByte(MsgpackFormat.FLOAT_64.toInt())
                 currentBuffer.writeLong(value.toRawBits())
             }
         }
@@ -95,15 +95,15 @@ class MsgpackWriter(private val sink: BufferedSink) : JsonWriter() {
         beforeValue()
         when (value) {
             in Short.MIN_VALUE..Short.MAX_VALUE -> {
-                currentBuffer.writeByte(MsgpackFormat.INT_16)
+                currentBuffer.writeByte(MsgpackFormat.INT_16.toInt())
                 currentBuffer.writeShort(value.toInt())
             }
             in Int.MIN_VALUE..Int.MAX_VALUE -> {
-                currentBuffer.writeByte(MsgpackFormat.INT_32)
+                currentBuffer.writeByte(MsgpackFormat.INT_32.toInt())
                 currentBuffer.writeInt(value.toInt())
             }
             in Long.MIN_VALUE..Long.MAX_VALUE -> {
-                currentBuffer.writeByte(MsgpackFormat.INT_64)
+                currentBuffer.writeByte(MsgpackFormat.INT_64.toInt())
                 currentBuffer.writeLong(value)
             }
         }
