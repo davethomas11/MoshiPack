@@ -5,6 +5,8 @@ import okio.BufferedSource
 
 object MsgpackFormat {
 
+    const val FIX_INT_MAX = 0x7f
+
     const val SIZE_8 = (2e8 - 1).toLong()
     const val SIZE_16 = (2e16 - 1).toLong()
     const val SIZE_32 = (2e32 - 1).toLong()

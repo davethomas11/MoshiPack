@@ -63,5 +63,24 @@ class TestMessagePackWriter {
         assertEquals("92$pizzabytes$pizzabytes", buffer.readByteString().hex())
     }
 
+    @Test
+    fun theMessagePackWebsitePlug() {
+//        It's like JSON.
+//        but fast and small.
+        //https://msgpack.org/images/intro.png
+
+        // 82 - 2 element map
+        // a7 63 6f 6d 70 61 63 74 - compact
+        // c3 - true
+
+        // a6 73 63 68 65 6d 61 - schema
+        // 00 - integer 0
+
+        val map = mapOf("compact" to true, "schema" to 0)
+        val buffer = MoshiPack.pack(map)
+
+        assertEquals("82a7636f6d70616374c3a6736368656d6100", buffer.readByteString().hex())
+    }
+
 }
 
