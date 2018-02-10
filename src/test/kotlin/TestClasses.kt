@@ -1,6 +1,4 @@
-class Pizza {
-    var topping = "Stuff"
-}
+data class Pizza(var topping: String = "Stuff")
 
 class PizzaPlus {
     var topping = "Stuff"

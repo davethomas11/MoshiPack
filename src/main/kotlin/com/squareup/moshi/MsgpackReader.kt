@@ -19,10 +19,10 @@ class MsgpackReader(private val source: BufferedSource) : JsonReader() {
     private val PEEKED_DOUBLE = 17
     private val PEEKED_EOF = 18
 
-    var currentSize: Long = 0
+    var pathSize = LongArray(32) { 0 }
     var currentTag: Byte = 0
     var expectName = false
-    val buffer = source.buffer()
+    private val buffer = source.buffer()
     var peeked = PEEKED_NONE
 
     init {
@@ -35,7 +35,7 @@ class MsgpackReader(private val source: BufferedSource) : JsonReader() {
         pushScope(JsonScope.EMPTY_ARRAY)
         peeked = PEEKED_NONE
         pathIndices[stackSize - 1] = 0
-        currentSize = MsgpackFormat.ARRAY.typeFor(currentTag)?.readSize(source, currentTag)
+        pathSize[stackSize - 1] = MsgpackFormat.ARRAY.typeFor(currentTag)?.readSize(source, currentTag)
                 ?: throw IllegalStateException("Current tag 0x${currentTag.toString(16)} is not an array tag.")
     }
 
@@ -51,7 +51,7 @@ class MsgpackReader(private val source: BufferedSource) : JsonReader() {
         pushScope(JsonScope.EMPTY_OBJECT)
         peeked = PEEKED_NONE
         pathIndices[stackSize - 1] = 0
-        currentSize = MsgpackFormat.MAP.typeFor(currentTag)?.readSize(source, currentTag)
+        pathSize[stackSize - 1] = MsgpackFormat.MAP.typeFor(currentTag)?.readSize(source, currentTag)
                 ?: throw IllegalStateException("Current tag 0x${currentTag.toString(16)} is not a map tag.")
     }
 
@@ -124,7 +124,7 @@ class MsgpackReader(private val source: BufferedSource) : JsonReader() {
     override fun hasNext(): Boolean {
         val p = peeked
         if (p == PEEKED_NONE) doPeek()
-        return pathIndices[stackSize - 1] < currentSize
+        return pathIndices[stackSize - 1] < pathSize[stackSize - 1]
     }
 
     override fun selectName(options: Options?): Int {

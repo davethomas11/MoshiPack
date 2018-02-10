@@ -1,9 +1,11 @@
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.MsgpackReader
-import com.squareup.moshi.MsgpackWriter
 import okio.Buffer
 import okio.ByteString
-import org.junit.Assert
+import org.hamcrest.CoreMatchers
+import org.hamcrest.CoreMatchers.hasItems
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertThat
 import org.junit.Test
 
 class TestMessagePackReader {
@@ -20,7 +22,25 @@ class TestMessagePackReader {
         buffer.write(ByteString.decodeHex("81a7746f7070696e67a97065707065726f6e69"))
         val pizza = moshi.adapter(Pizza::class.java).fromJson(MsgpackReader(buffer))
 
-        Assert.assertEquals(pizza?.topping, "pepperoni")
+        assertEquals(pizza?.topping, "pepperoni")
+    }
+
+    @Test
+    fun didSomeoneOrderSomePizzas() {
+
+        val pizzabytes = "81a7746f7070696e67a97065707065726f6e69" // Not bagel bytes?
+
+        val buffer = Buffer()
+        buffer.write(ByteString.decodeHex("93$pizzabytes$pizzabytes$pizzabytes"))
+
+        val pizzas: List<Pizza> = MoshiPack.unpackList(buffer, ofClass = Pizza::class.java)
+
+        assertEquals(3, pizzas.size)
+
+        assertThat(pizzas, hasItems(
+                Pizza("pepperoni"),
+                Pizza("pepperoni"),
+                Pizza("pepperoni")))
     }
 
 
