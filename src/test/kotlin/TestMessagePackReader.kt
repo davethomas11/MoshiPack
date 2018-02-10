@@ -20,8 +20,6 @@ class TestMessagePackReader {
         buffer.write(ByteString.decodeHex("81a7746f7070696e67a97065707065726f6e69"))
         val pizza = moshi.adapter(Pizza::class.java).fromJson(MsgpackReader(buffer))
 
-        val msgPackString = buffer.readByteString()
-
         Assert.assertEquals(pizza?.topping, "pepperoni")
     }
 

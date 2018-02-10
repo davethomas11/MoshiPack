@@ -52,5 +52,16 @@ class TestMessagePackWriter {
     }
 
 
+    @Test
+    fun whoOrdersJustOnePizzaNotMe() {
+        val pizzas = listOf(Pizza(), Pizza())
+
+        val buffer = MoshiPack.pack(pizzas)
+
+        val pizzabytes = "81a7746f7070696e67a55374756666"
+
+        assertEquals("92$pizzabytes$pizzabytes", buffer.readByteString().hex())
+    }
+
 }
 
