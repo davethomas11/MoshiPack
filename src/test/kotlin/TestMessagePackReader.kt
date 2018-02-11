@@ -1,3 +1,4 @@
+import com.daveanthonythomas.moshipack.MoshiPack
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.MsgpackReader
 import okio.Buffer

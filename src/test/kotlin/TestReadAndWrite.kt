@@ -1,3 +1,4 @@
+import com.daveanthonythomas.moshipack.MoshiPack
 import junit.framework.Assert.assertEquals
 import org.junit.Test
 
@@ -16,5 +17,15 @@ class TestReadAndWrite {
         assertEquals(55.5F, unmarshalled.num2)
         assertEquals(3, unmarshalled.num3)
         assertEquals(500.25, unmarshalled.num4, 0.0)
+    }
+
+    @Test
+    fun nestReadAndWrite() {
+        val nest = Nest(listOf(Egg(2), Egg(9)))
+        val moshiPack = MoshiPack()
+        val byteArray = moshiPack.packToByteArray(nest)
+        val unpackedNest: Nest = moshiPack.unpack(byteArray)
+
+        assertEquals(nest, unpackedNest)
     }
 }
