@@ -83,5 +83,13 @@ class TestMessagePackWriter {
         assertEquals("82a7636f6d70616374c3a6736368656d6100", buffer.readByteString().hex())
     }
 
+    @Test
+    fun transientsAreNotWritten() {
+        val transients = Transients("A", "B", "C")
+        val buffer = MoshiPack().pack(transients)
+
+        assertEquals("82a3${"one".hex}a141a5${"three".hex}a143", buffer.readByteString().hex())
+    }
+
 }
 

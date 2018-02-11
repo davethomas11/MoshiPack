@@ -9,7 +9,7 @@ import okio.BufferedSource
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
 
-class MoshiPack(var builder: Moshi.Builder.() -> kotlin.Unit = {},
+class MoshiPack(private var builder: Moshi.Builder.() -> kotlin.Unit = {},
                 var moshi: Moshi = MoshiPack.moshi(builder)) {
 
     companion object {

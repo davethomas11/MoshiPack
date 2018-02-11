@@ -12,3 +12,5 @@ data class SomeNumbers(var num1: Int, var num2: Float, var num3: Short, var num4
 data class Nest(var eggs: List<Egg>)
 
 data class Egg(var size: Int = 2)
+
+data class Transients(var one: String, @Transient var two: String, var three: String)

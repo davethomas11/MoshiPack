@@ -281,8 +281,8 @@ class MsgpackReader(private val source: BufferedSource) : JsonReader() {
     override fun skipValue() {
         if (peeked == PEEKED_NONE) doPeek()
         when (peek()) {
-            JsonReader.Token.BEGIN_ARRAY -> TODO()
-            JsonReader.Token.BEGIN_OBJECT -> TODO()
+            JsonReader.Token.BEGIN_ARRAY -> skipArray()
+            JsonReader.Token.BEGIN_OBJECT -> skipObject()
             JsonReader.Token.STRING -> nextString()
             JsonReader.Token.NUMBER -> readNumber()
             JsonReader.Token.BOOLEAN -> nextBoolean()
@@ -292,6 +292,23 @@ class MsgpackReader(private val source: BufferedSource) : JsonReader() {
             }
             else -> return
         }
+    }
+
+    private fun skipObject() {
+        beginObject()
+        while(hasNext()) {
+            nextName()
+            skipValue()
+        }
+        endObject()
+    }
+
+    private fun skipArray() {
+        beginArray()
+        while(hasNext()) {
+            skipValue()
+        }
+        endArray()
     }
 
     override fun peek(): Token {
