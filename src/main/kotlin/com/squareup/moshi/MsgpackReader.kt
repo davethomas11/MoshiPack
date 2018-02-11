@@ -117,12 +117,23 @@ class MsgpackReader(private val source: BufferedSource) : JsonReader() {
     private fun readNumber(): Number {
         val p = peeked
         if (p == PEEKED_NONE) doPeek()
+
+
+
         pathIndices[stackSize - 1]++
         peeked = PEEKED_NONE
         if (scopes[stackSize - 1] == NONEMPTY_OBJECT && pathIndices[stackSize - 1] < pathSize[stackSize - 1]) {
             expectName = true
         }
         return when (currentTag) {
+            in MsgpackFormat.STR -> {
+                val readBytes = MsgpackFormat.STR.typeFor(currentTag)?.readSize(source, currentTag)
+                if (readBytes != null) {
+                    source.readUtf8(readBytes).toDouble()
+                } else {
+                    throw AssertionError()
+                }
+            }
             in 0..MsgpackFormat.FIX_INT_MAX -> currentTag
             MsgpackFormat.FLOAT_64 -> Double.fromBits(source.readLong())
             MsgpackFormat.FLOAT_32 -> java.lang.Float.intBitsToFloat(source.readInt())
