@@ -19,10 +19,13 @@ class MsgpackReader(private val source: BufferedSource) : JsonReader() {
     private val PEEKED_LONG = 16
     private val PEEKED_DOUBLE = 17
     private val PEEKED_EOF = 18
+    private val PEEKED_BUFFERED = 19
+    private val PEEKED_BUFFERED_NAME = 20
 
+    private var promotedNameToValue = false
+    private var peekedString: String = ""
     var pathSize = LongArray(32) { 0 }
     var currentTag: Byte = 0
-    var expectName = false
     private val buffer = source.buffer()
     var peeked = PEEKED_NONE
 
@@ -62,36 +65,18 @@ class MsgpackReader(private val source: BufferedSource) : JsonReader() {
         pathIndices[stackSize - 1]++
     }
 
-    override fun nextString(): String {
+    private fun readString(): String {
         if (peeked == PEEKED_NONE) doPeek()
-
-        if (expectName) {
-            expectName = false
-        } else {
-            pathIndices[stackSize - 1]++
-        }
-
-        peeked = PEEKED_NONE
-
-        if (scopes[stackSize - 1] == NONEMPTY_OBJECT && pathIndices[stackSize - 1] < pathSize[stackSize - 1]) {
-            expectName = true
-        }
 
         val readBytes = MsgpackFormat.STR.typeFor(currentTag)?.readSize(source, currentTag)
                 ?: throw IllegalStateException("Current tag 0x${currentTag.toString(16)} is not a string tag.")
         return source.readUtf8(readBytes)
     }
 
-    override fun nextName() = nextString()
-
     override fun nextBoolean(): Boolean {
         if (peeked == PEEKED_NONE) doPeek()
         peeked = PEEKED_NONE
         pathIndices[stackSize - 1]++
-
-        if (scopes[stackSize - 1] == NONEMPTY_OBJECT && pathIndices[stackSize - 1] < pathSize[stackSize - 1]) {
-            expectName = true
-        }
 
         return currentTag == MsgpackFormat.TRUE
     }
@@ -101,16 +86,12 @@ class MsgpackReader(private val source: BufferedSource) : JsonReader() {
         peeked = PEEKED_NONE
         pathIndices[stackSize - 1]++
 
-        if (scopes[stackSize - 1] == NONEMPTY_OBJECT && pathIndices[stackSize - 1] < pathSize[stackSize - 1]) {
-            expectName = true
-        }
-
         return null
     }
 
     override fun nextDouble(): Double = readNumber().toDouble()
 
-    override fun nextLong(): Long  = readNumber().toLong()
+    override fun nextLong(): Long = readNumber().toLong()
 
     override fun nextInt(): Int = readNumber().toInt()
 
@@ -118,13 +99,9 @@ class MsgpackReader(private val source: BufferedSource) : JsonReader() {
         val p = peeked
         if (p == PEEKED_NONE) doPeek()
 
-
-
         pathIndices[stackSize - 1]++
         peeked = PEEKED_NONE
-        if (scopes[stackSize - 1] == NONEMPTY_OBJECT && pathIndices[stackSize - 1] < pathSize[stackSize - 1]) {
-            expectName = true
-        }
+
         return when (currentTag) {
             in MsgpackFormat.STR -> {
                 val readBytes = MsgpackFormat.STR.typeFor(currentTag)?.readSize(source, currentTag)
@@ -158,26 +135,168 @@ class MsgpackReader(private val source: BufferedSource) : JsonReader() {
         return pathIndices[stackSize - 1] < pathSize[stackSize - 1]
     }
 
-    override fun selectName(options: Options?): Int {
-        val name = nextName()
-        return pathIndices[stackSize - 1]
-        //TODO "Need proper skipping and indexing here"
+    @Throws(IOException::class)
+    override fun nextName(): String {
+        var p = peeked
+        if (p == PEEKED_NONE) {
+            p = doPeek()
+        }
+        val result: String
+        if (p == PEEKED_STRING) {
+            result = readString()
+        } else if (p == PEEKED_BUFFERED_NAME) {
+            result = peekedString
+        } else {
+            throw JsonDataException("Expected a name but was " + peek() + " at path " + path)
+        }
+        peeked = PEEKED_NONE
+        pathNames[stackSize - 1] = result
+        return result
     }
 
-    override fun selectString(options: Options?): Int {
-        TODO("Not sure what to do here yet")
+    @Throws(IOException::class)
+    override fun selectName(options: JsonReader.Options): Int {
+        var p = peeked
+        if (p == PEEKED_NONE) {
+            p = doPeek()
+        }
+        if (p != PEEKED_STRING && p != PEEKED_BUFFERED_NAME) {
+            return -1
+        }
+        if (p == PEEKED_BUFFERED_NAME) {
+            return findName(peekedString, options)
+        }
+
+        // Save the last recorded path name, so that we
+        // can restore the peek state in case we fail to find a match.
+        val lastPathName = pathNames[stackSize - 1]
+
+        val nextName = nextName()
+        val result = findName(nextName, options)
+
+        if (result == -1) {
+            peeked = PEEKED_BUFFERED_NAME
+            peekedString = nextName
+            // We can't push the path further, make it seem like nothing happened.
+            pathNames[stackSize - 1] = lastPathName
+        }
+
+        return result
+    }
+
+    /**
+     * If `name` is in `options` this consumes it and returns it's index.
+     * Otherwise this returns -1 and no name is consumed.
+     */
+    private fun findName(name: String, options: JsonReader.Options): Int {
+        var i = 0
+        val size = options.strings.size
+        while (i < size) {
+            if (name == options.strings[i]) {
+                peeked = PEEKED_NONE
+                pathNames[stackSize - 1] = name
+
+                return i
+            }
+            i++
+        }
+        return -1
+    }
+
+    @Throws(IOException::class)
+    override fun nextString(): String {
+        var p = peeked
+        if (p == PEEKED_NONE) {
+            p = doPeek()
+        }
+        val result: String
+        if (p == PEEKED_STRING) {
+            result = readString()
+        } else if (p == PEEKED_BUFFERED) {
+            result = peekedString
+            peekedString = ""
+        } else if (p == PEEKED_LONG) {
+            result = nextDouble().toString()
+        } else {
+            throw JsonDataException("Expected a string but was " + peek() + " at path " + path)
+        }
+        peeked = PEEKED_NONE
+        if (!promotedNameToValue) pathIndices[stackSize - 1]++
+        else promotedNameToValue = false
+        return result
+    }
+
+    @Throws(IOException::class)
+    override fun selectString(options: JsonReader.Options): Int {
+        var p = peeked
+        if (p == PEEKED_NONE) {
+            p = doPeek()
+        }
+        if (p != PEEKED_STRING && p != PEEKED_BUFFERED) {
+            return -1
+        }
+        if (p == PEEKED_BUFFERED) {
+            return findString(peekedString, options)
+        }
+
+        val nextString = nextString()
+        val result = findString(nextString, options)
+
+        if (result == -1) {
+            peeked = PEEKED_BUFFERED
+            peekedString = nextString
+            pathIndices[stackSize - 1]--
+        }
+
+        return result
+    }
+
+    /**
+     * If `string` is in `options` this consumes it and returns it's index.
+     * Otherwise this returns -1 and no string is consumed.
+     */
+    private fun findString(string: String, options: JsonReader.Options): Int {
+        var i = 0
+        val size = options.strings.size
+        while (i < size) {
+            if (string == options.strings[i]) {
+                peeked = PEEKED_NONE
+                pathIndices[stackSize - 1]++
+
+                return i
+            }
+            i++
+        }
+        return -1
     }
 
     override fun promoteNameToValue() {
+        if (hasNext()) {
+            peekedString = nextName()
+            peeked = PEEKED_BUFFERED
+            promotedNameToValue = true
+        }
     }
 
     override fun skipValue() {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        if (peeked == PEEKED_NONE) doPeek()
+        when (peek()) {
+            JsonReader.Token.BEGIN_ARRAY -> TODO()
+            JsonReader.Token.BEGIN_OBJECT -> TODO()
+            JsonReader.Token.STRING -> nextString()
+            JsonReader.Token.NUMBER -> readNumber()
+            JsonReader.Token.BOOLEAN -> nextBoolean()
+            JsonReader.Token.NULL -> {
+                peeked = PEEKED_NONE
+                pathIndices[stackSize - 1]++
+            }
+            else -> return
+        }
     }
 
     override fun peek(): Token {
         var p = peeked
-        if (p == PEEKED_NONE){
+        if (p == PEEKED_NONE) {
             doPeek()
             p = peeked
         }
@@ -187,7 +306,7 @@ class MsgpackReader(private val source: BufferedSource) : JsonReader() {
             PEEKED_END_OBJECT -> Token.END_OBJECT
             PEEKED_BEGIN_ARRAY -> Token.BEGIN_ARRAY
             PEEKED_END_ARRAY -> Token.END_ARRAY
-            PEEKED_STRING -> Token.STRING
+            PEEKED_STRING, PEEKED_BUFFERED -> Token.STRING
             PEEKED_TRUE, PEEKED_FALSE -> Token.BOOLEAN
             PEEKED_NULL -> Token.NULL
             PEEKED_DOUBLE, PEEKED_LONG -> Token.NUMBER
@@ -217,21 +336,15 @@ class MsgpackReader(private val source: BufferedSource) : JsonReader() {
 
         val c = buffer.readByte()
         when (c) {
-            in MsgpackFormat.ARRAY -> {
-                peeked = PEEKED_BEGIN_ARRAY
-                expectName = true
-            }
-            in MsgpackFormat.MAP -> {
-                peeked = PEEKED_BEGIN_OBJECT
-                expectName = true
-            }
+            in MsgpackFormat.ARRAY -> peeked = PEEKED_BEGIN_ARRAY
+            in MsgpackFormat.MAP -> peeked = PEEKED_BEGIN_OBJECT
             in MsgpackFormat.STR -> peeked = PEEKED_STRING
             in 0..MsgpackFormat.FIX_INT_MAX,
             MsgpackFormat.INT_16,
             MsgpackFormat.INT_32,
             MsgpackFormat.INT_64 -> peeked = PEEKED_LONG
             MsgpackFormat.FLOAT_32,
-            MsgpackFormat.FLOAT_64 ->  peeked = PEEKED_DOUBLE
+            MsgpackFormat.FLOAT_64 -> peeked = PEEKED_DOUBLE
             MsgpackFormat.NIL -> peeked = PEEKED_NULL
             MsgpackFormat.TRUE -> peeked = PEEKED_TRUE
             MsgpackFormat.FALSE -> peeked = PEEKED_FALSE
