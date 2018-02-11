@@ -88,4 +88,26 @@ class TestMessagePackReader {
         assertEquals(0, unpacked.schema)
     }
 
+    @Test
+    fun nestObjects() {
+
+        val buffer = Buffer()
+        buffer += "81"
+        buffer += "a4${"eggs".hex}"
+        buffer += "95"
+        (1 until 6).forEach {
+            buffer += "81"
+            buffer += "a4${"size".hex}"
+            buffer.writeByte(it)
+        }
+
+        val nest: Nest = MoshiPack.unpack(buffer)
+
+        assertEquals(5, nest.eggs.size)
+
+        (0 until 5).forEach {
+            assertEquals(it + 1, nest.eggs[it].size)
+        }
+    }
+
 }
