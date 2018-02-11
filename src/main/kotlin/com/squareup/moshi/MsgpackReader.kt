@@ -1,6 +1,7 @@
 package com.squareup.moshi
 
 import com.squareup.moshi.JsonScope.EMPTY_DOCUMENT
+import com.squareup.moshi.JsonScope.NONEMPTY_OBJECT
 import okio.BufferedSource
 import java.io.IOException
 
@@ -62,8 +63,7 @@ class MsgpackReader(private val source: BufferedSource) : JsonReader() {
     }
 
     override fun nextString(): String {
-        val p = peeked
-        if (p == PEEKED_NONE) doPeek()
+        if (peeked == PEEKED_NONE) doPeek()
 
         if (expectName) {
             expectName = false
@@ -73,6 +73,10 @@ class MsgpackReader(private val source: BufferedSource) : JsonReader() {
 
         peeked = PEEKED_NONE
 
+        if (scopes[stackSize - 1] == NONEMPTY_OBJECT && pathIndices[stackSize - 1] < pathSize[stackSize - 1]) {
+            expectName = true
+        }
+
         val readBytes = MsgpackFormat.STR.typeFor(currentTag)?.readSize(source, currentTag)
                 ?: throw IllegalStateException("Current tag 0x${currentTag.toString(16)} is not a string tag.")
         return source.readUtf8(readBytes)
@@ -81,14 +85,26 @@ class MsgpackReader(private val source: BufferedSource) : JsonReader() {
     override fun nextName() = nextString()
 
     override fun nextBoolean(): Boolean {
+        if (peeked == PEEKED_NONE) doPeek()
         peeked = PEEKED_NONE
         pathIndices[stackSize - 1]++
+
+        if (scopes[stackSize - 1] == NONEMPTY_OBJECT && pathIndices[stackSize - 1] < pathSize[stackSize - 1]) {
+            expectName = true
+        }
+
         return currentTag == MsgpackFormat.TRUE
     }
 
     override fun <T : Any?> nextNull(): T? {
+        if (peeked == PEEKED_NONE) doPeek()
         peeked = PEEKED_NONE
         pathIndices[stackSize - 1]++
+
+        if (scopes[stackSize - 1] == NONEMPTY_OBJECT && pathIndices[stackSize - 1] < pathSize[stackSize - 1]) {
+            expectName = true
+        }
+
         return null
     }
 
@@ -103,7 +119,11 @@ class MsgpackReader(private val source: BufferedSource) : JsonReader() {
         if (p == PEEKED_NONE) doPeek()
         pathIndices[stackSize - 1]++
         peeked = PEEKED_NONE
+        if (scopes[stackSize - 1] == NONEMPTY_OBJECT && pathIndices[stackSize - 1] < pathSize[stackSize - 1]) {
+            expectName = true
+        }
         return when (currentTag) {
+            in 0..MsgpackFormat.FIX_INT_MAX -> currentTag
             MsgpackFormat.FLOAT_64 -> Double.fromBits(source.readLong())
             MsgpackFormat.FLOAT_32 -> java.lang.Float.intBitsToFloat(source.readInt())
             MsgpackFormat.INT_32 -> source.readInt()
@@ -138,7 +158,6 @@ class MsgpackReader(private val source: BufferedSource) : JsonReader() {
     }
 
     override fun promoteNameToValue() {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     override fun skipValue() {
@@ -157,7 +176,7 @@ class MsgpackReader(private val source: BufferedSource) : JsonReader() {
             PEEKED_END_OBJECT -> Token.END_OBJECT
             PEEKED_BEGIN_ARRAY -> Token.BEGIN_ARRAY
             PEEKED_END_ARRAY -> Token.END_ARRAY
-            PEEKED_STRING -> if (expectName) Token.NAME else Token.STRING
+            PEEKED_STRING -> Token.STRING
             PEEKED_TRUE, PEEKED_FALSE -> Token.BOOLEAN
             PEEKED_NULL -> Token.NULL
             PEEKED_DOUBLE, PEEKED_LONG -> Token.NUMBER
@@ -196,14 +215,15 @@ class MsgpackReader(private val source: BufferedSource) : JsonReader() {
                 expectName = true
             }
             in MsgpackFormat.STR -> peeked = PEEKED_STRING
+            in 0..MsgpackFormat.FIX_INT_MAX,
             MsgpackFormat.INT_16,
             MsgpackFormat.INT_32,
             MsgpackFormat.INT_64 -> peeked = PEEKED_LONG
             MsgpackFormat.FLOAT_32,
             MsgpackFormat.FLOAT_64 ->  peeked = PEEKED_DOUBLE
             MsgpackFormat.NIL -> peeked = PEEKED_NULL
-            MsgpackFormat.TRUE -> PEEKED_TRUE
-            MsgpackFormat.FALSE -> PEEKED_FALSE
+            MsgpackFormat.TRUE -> peeked = PEEKED_TRUE
+            MsgpackFormat.FALSE -> peeked = PEEKED_FALSE
             else -> throw IllegalStateException("Msgpack format tag not yet supported: 0x" + c.toString(16))
         }
 

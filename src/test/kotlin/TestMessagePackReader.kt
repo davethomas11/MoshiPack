@@ -43,5 +43,49 @@ class TestMessagePackReader {
                 Pizza("pepperoni")))
     }
 
+    @Test
+    fun theMessagePackWebsitePlug() {
+//        It's like JSON.
+//        but fast and small.
+        //https://msgpack.org/images/intro.png
+
+        // 82 - 2 element map
+        // a7 63 6f 6d 70 61 63 74 - compact
+        // c3 - true
+
+        // a6 73 63 68 65 6d 61 - schema
+        // 00 - integer 0
+
+        val buffer = Buffer()
+        buffer.write(ByteString.decodeHex("82a7636f6d70616374c3a6736368656d6100"))
+
+        val unpacked: Map<Any, Any> = MoshiPack.unpack(buffer)
+
+        assertEquals(2, unpacked.size)
+        assertEquals(true, unpacked["compact"])
+        assertEquals(0.0, unpacked["schema"])
+    }
+
+    @Test
+    fun theMessagePackWebsitePlugObj() {
+//        It's like JSON.
+//        but fast and small.
+        //https://msgpack.org/images/intro.png
+
+        // 82 - 2 element map
+        // a7 63 6f 6d 70 61 63 74 - compact
+        // c3 - true
+
+        // a6 73 63 68 65 6d 61 - schema
+        // 00 - integer 0
+
+        val buffer = Buffer()
+        buffer.write(ByteString.decodeHex("82a7636f6d70616374c3a6736368656d6100"))
+
+        val unpacked: ThePlug = MoshiPack.unpack(buffer)
+
+        assertEquals(true, unpacked.compact)
+        assertEquals(0, unpacked.schema)
+    }
 
 }
