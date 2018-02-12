@@ -68,17 +68,23 @@ class MsgpackWriter(private val sink: BufferedSink) : JsonWriter() {
         if (!lenient && (value.isNaN() || value.isInfinite())) {
             throw IllegalArgumentException("Numeric values must be finite, but was " + value)
         }
+
+        // If whole number && a short then store it as more efficient int type
+        if (value in Short.MIN_VALUE..Short.MAX_VALUE && value % 1 == 0.0) {
+            return value(value.toLong())
+        }
+
         if (promoteValueToName) {
             return name(value.toString())
         }
         writeDeferredName()
         beforeValue()
         when (value) {
-            in Float.MIN_VALUE..Float.MAX_VALUE -> {
+            in -Float.MAX_VALUE..Float.MAX_VALUE -> {
                 currentBuffer.writeByte(MsgpackFormat.FLOAT_32.toInt())
                 currentBuffer.writeInt(java.lang.Float.floatToIntBits(value.toFloat()))
             }
-            in Double.MIN_VALUE..Double.MAX_VALUE -> {
+            in -Double.MAX_VALUE..Double.MAX_VALUE -> {
                 currentBuffer.writeByte(MsgpackFormat.FLOAT_64.toInt())
                 currentBuffer.writeLong(value.toRawBits())
             }

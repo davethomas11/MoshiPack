@@ -1,9 +1,6 @@
 package com.daveanthonythomas.moshipack
 
-import com.squareup.moshi.Moshi
-import com.squareup.moshi.MsgpackReader
-import com.squareup.moshi.MsgpackWriter
-import com.squareup.moshi.Types
+import com.squareup.moshi.*
 import okio.Buffer
 import okio.BufferedSource
 import java.lang.reflect.ParameterizedType
@@ -11,6 +8,9 @@ import java.lang.reflect.Type
 
 class MoshiPack(private var builder: Moshi.Builder.() -> kotlin.Unit = {},
                 var moshi: Moshi = MoshiPack.moshi(builder)) {
+
+    val jsonToMsgpack = FormatInterchange(Format.Json(), Format.Msgpack())
+    val msgpackToJson = FormatInterchange(Format.Msgpack(), Format.Json())
 
     companion object {
         inline fun <reified T> pack(value: T, moshi: Moshi) =
@@ -43,7 +43,12 @@ class MoshiPack(private var builder: Moshi.Builder.() -> kotlin.Unit = {},
     }
 
     inline fun <reified T> pack(value: T) = MoshiPack.pack(value, moshi)
-    inline fun <reified T> packToByteArray(value: T) = MoshiPack.pack(value, moshi).readByteArray()
+    inline fun <reified T> packToByteArray(value: T): ByteArray = MoshiPack.pack(value, moshi).readByteArray()
     inline fun <reified T> unpack(bytes: ByteArray): T = unpack(Buffer().apply { write(bytes) })
     inline fun <reified T> unpack(source: BufferedSource) = MoshiPack.unpack<T>(source, moshi)
+
+    fun msgpackToJson(bytes: ByteArray) = msgpackToJson(Buffer().apply { write(bytes) })
+    fun msgpackToJson(source: BufferedSource) = msgpackToJson.transform(source).readUtf8()
+    fun jsonToMsgpack(jsonString: String) = jsonToMsgpack(Buffer().apply { writeUtf8(jsonString) })
+    fun jsonToMsgpack(source: BufferedSource) = jsonToMsgpack.transform(source)
 }

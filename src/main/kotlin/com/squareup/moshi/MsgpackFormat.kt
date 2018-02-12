@@ -22,20 +22,20 @@ object MsgpackFormat {
     const val INT_32 = 0xd2.toByte()
     const val INT_64 = 0xd3.toByte()
 
-    private val FIX_STR = MsgpackFormatType(0xa0.toByte(), 31, isFix = true)
+    val FIX_STR = MsgpackFormatType(0xa0.toByte(), 31, isFix = true)
     //private val STR_8 = com.squareup.moshi.MsgpackFormatType(0xd9, SIZE_8)
-    private val STR_16 = MsgpackFormatType(0xda.toByte(), SIZE_16)
-    private val STR_32 = MsgpackFormatType(0xdb.toByte(), SIZE_32)
+    val STR_16 = MsgpackFormatType(0xda.toByte(), SIZE_16)
+    val STR_32 = MsgpackFormatType(0xdb.toByte(), SIZE_32)
     val STR = arrayOf(FIX_STR, STR_16, STR_32)
 
-    private val FIX_ARRAY = MsgpackFormatType(0x90.toByte(), 15, isFix = true)
-    private val ARRAY_16 = MsgpackFormatType(0xdc.toByte(), SIZE_16)
-    private val ARRAY_32 = MsgpackFormatType(0xdd.toByte(), SIZE_32)
+    val FIX_ARRAY = MsgpackFormatType(0x90.toByte(), 15, isFix = true)
+    val ARRAY_16 = MsgpackFormatType(0xdc.toByte(), SIZE_16)
+    val ARRAY_32 = MsgpackFormatType(0xdd.toByte(), SIZE_32)
     val ARRAY = arrayOf(FIX_ARRAY, ARRAY_16, ARRAY_32)
 
-    private val FIX_MAP = MsgpackFormatType(0x80.toByte(), 15, isFix = true)
-    private val MAP_16 = MsgpackFormatType(0xde.toByte(), SIZE_16)
-    private val MAP_32 = MsgpackFormatType(0xdf.toByte(), SIZE_32)
+    val FIX_MAP = MsgpackFormatType(0x80.toByte(), 15, isFix = true)
+    val MAP_16 = MsgpackFormatType(0xde.toByte(), SIZE_16)
+    val MAP_32 = MsgpackFormatType(0xdf.toByte(), SIZE_32)
     val MAP = arrayOf(FIX_MAP, MAP_16, MAP_32)
 
     fun tagFor(type: Array<MsgpackFormatType>, size: Int) =
