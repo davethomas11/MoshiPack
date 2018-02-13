@@ -9,6 +9,8 @@ This is an implementation of MessagePack serialization and deserialization built
 
 The library is intended to be consumed in a Kotlin project, and is not intended for Java use.
 
+See [Moshi](https://github.com/square/moshi) for adapter usage and reference.
+
 ----
 
 ## Status -> In development ( Not ready ) ```Baking```
