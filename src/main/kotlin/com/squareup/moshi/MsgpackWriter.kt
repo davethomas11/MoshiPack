@@ -68,29 +68,7 @@ class MsgpackWriter(private val sink: BufferedSink) : JsonWriter() {
         if (!lenient && (value.isNaN() || value.isInfinite())) {
             throw IllegalArgumentException("Numeric values must be finite, but was " + value)
         }
-
-        // If whole number && a short then store it as more efficient int type
-        if (value in Short.MIN_VALUE..Short.MAX_VALUE && value % 1 == 0.0) {
-            return value(value.toLong())
-        }
-
-        if (promoteValueToName) {
-            return name(value.toString())
-        }
-        writeDeferredName()
-        beforeValue()
-        when (value) {
-            in -Float.MAX_VALUE..Float.MAX_VALUE -> {
-                currentBuffer.writeByte(MsgpackFormat.FLOAT_32.toInt())
-                currentBuffer.writeInt(java.lang.Float.floatToIntBits(value.toFloat()))
-            }
-            in -Double.MAX_VALUE..Double.MAX_VALUE -> {
-                currentBuffer.writeByte(MsgpackFormat.FLOAT_64.toInt())
-                currentBuffer.writeLong(value.toRawBits())
-            }
-        }
-        pathIndices[stackSize - 1]++
-        return this
+        return value(value as Number)
     }
 
     override fun value(value: Long): JsonWriter {
@@ -115,9 +93,9 @@ class MsgpackWriter(private val sink: BufferedSink) : JsonWriter() {
                 currentBuffer.writeByte(MsgpackFormat.UINT_32.toInt())
                 currentBuffer.writeInt(value.toInt())
             }
-            in MsgpackFormat.UINT_8_MIN..MsgpackFormat.UINT_8_MAX -> {
-                currentBuffer.writeByte(MsgpackFormat.UINT_8.toInt())
-                currentBuffer.writeByte(value.toInt())
+            in MsgpackFormat.UINT_32_MAX+1..Long.MAX_VALUE -> {
+                currentBuffer.writeByte(MsgpackFormat.UINT_64.toInt())
+                currentBuffer.writeLong(value)
             }
             in Short.MIN_VALUE..Short.MAX_VALUE -> {
                 currentBuffer.writeByte(MsgpackFormat.INT_16.toInt())
@@ -137,20 +115,29 @@ class MsgpackWriter(private val sink: BufferedSink) : JsonWriter() {
     }
 
     override fun value(value: Number?): JsonWriter {
-        if (value == null) {
-            return nullValue()
+        if (value == null) return nullValue()
+
+        // If its a whole number store it as an int type
+        if (value.toDouble() % 1 == 0.0) {
+            return value(value.toLong())
         }
 
-        val string = value.toString()
-        if (!lenient && (string == "-Infinity" || string == "Infinity" || string == "NaN")) {
-            throw IllegalArgumentException("Numeric values must be finite, but was " + value)
-        }
         if (promoteValueToName) {
-            return name(string)
+            return name(value.toString())
         }
         writeDeferredName()
         beforeValue()
-        string(currentBuffer, string)
+        when (value.toDouble()) {
+            in -Float.MAX_VALUE..Float.MAX_VALUE -> {
+                currentBuffer.writeByte(MsgpackFormat.FLOAT_32.toInt())
+                currentBuffer.writeInt(java.lang.Float.floatToIntBits(value.toFloat()))
+            }
+            in -Double.MAX_VALUE..Double.MAX_VALUE-> {
+                currentBuffer.writeByte(MsgpackFormat.FLOAT_64.toInt())
+                currentBuffer.writeLong(value.toDouble().toRawBits())
+            }
+        }
+
         pathIndices[stackSize - 1]++
         return this
     }

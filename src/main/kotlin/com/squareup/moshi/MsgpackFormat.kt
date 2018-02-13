@@ -32,6 +32,8 @@ object MsgpackFormat {
     const val UINT_32_MAX = 32768*32768/2-1
     const val UINT_32 = 0xce.toByte()
 
+    const val UINT_64 = 0xcf.toByte()
+
     const val INT_8 = 0xd0.toByte()
     const val INT_16 = 0xd1.toByte()
     const val INT_32 = 0xd2.toByte()

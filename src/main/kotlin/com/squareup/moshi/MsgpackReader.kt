@@ -114,6 +114,7 @@ class MsgpackReader(private val source: BufferedSource) : JsonReader() {
             MsgpackFormat.UINT_8 -> source.readByte().toInt() and 0xff
             MsgpackFormat.UINT_16 -> source.readShort().toInt() and 0xffff
             MsgpackFormat.UINT_32 -> source.readInt().toLong() and 0xffffffff
+            MsgpackFormat.UINT_64 -> source.readLong()
             in MsgpackFormat.FIX_INT_MIN..MsgpackFormat.FIX_INT_MAX -> currentTag
             MsgpackFormat.FLOAT_64 -> Double.fromBits(source.readLong())
             MsgpackFormat.FLOAT_32 -> java.lang.Float.intBitsToFloat(source.readInt())

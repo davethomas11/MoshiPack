@@ -55,7 +55,7 @@ class FormatInterchange(val formatIn: Format, val formatOut: Format) {
 
 sealed class Format {
     class Json: Format() {
-        override fun reader(source: BufferedSource) = JsonReader.of(source)
+        override fun reader(source: BufferedSource) = JsonReader.of(source).apply { isLenient = true }
         override fun writer(sink: BufferedSink) = JsonWriter.of(sink)
     }
     class Msgpack: Format() {
