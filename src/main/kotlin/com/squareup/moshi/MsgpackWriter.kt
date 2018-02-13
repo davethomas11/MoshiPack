@@ -100,7 +100,23 @@ class MsgpackWriter(private val sink: BufferedSink) : JsonWriter() {
         writeDeferredName()
         beforeValue()
         when (value) {
-            in  MsgpackFormat.FIX_INT_MIN..MsgpackFormat.FIX_INT_MAX -> {
+            in MsgpackFormat.FIX_INT_MIN..MsgpackFormat.FIX_INT_MAX -> {
+                currentBuffer.writeByte(value.toInt())
+            }
+            in MsgpackFormat.UINT_8_MIN..MsgpackFormat.UINT_8_MAX -> {
+                currentBuffer.writeByte(MsgpackFormat.UINT_8.toInt())
+                currentBuffer.writeByte(value.toInt())
+            }
+            in MsgpackFormat.UINT_16_MIN..MsgpackFormat.UINT_16_MAX -> {
+                currentBuffer.writeByte(MsgpackFormat.UINT_16.toInt())
+                currentBuffer.writeShort(value.toInt())
+            }
+            in MsgpackFormat.UINT_32_MIN..MsgpackFormat.UINT_32_MAX -> {
+                currentBuffer.writeByte(MsgpackFormat.UINT_32.toInt())
+                currentBuffer.writeInt(value.toInt())
+            }
+            in MsgpackFormat.UINT_8_MIN..MsgpackFormat.UINT_8_MAX -> {
+                currentBuffer.writeByte(MsgpackFormat.UINT_8.toInt())
                 currentBuffer.writeByte(value.toInt())
             }
             in Short.MIN_VALUE..Short.MAX_VALUE -> {

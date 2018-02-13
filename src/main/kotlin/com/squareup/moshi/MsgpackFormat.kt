@@ -8,6 +8,7 @@ object MsgpackFormat {
     const val FIX_INT_MAX = 0x7f
     const val FIX_INT_MIN = -32
 
+
     const val SIZE_8 = (2e8 - 1).toLong()
     const val SIZE_16 = (2e16 - 1).toLong()
     const val SIZE_32 = (2e32 - 1).toLong()
@@ -19,6 +20,19 @@ object MsgpackFormat {
     const val FLOAT_32 = 0xca.toByte()
     const val FLOAT_64 = 0xcb.toByte()
 
+    const val UINT_8_MIN = 128
+    const val UINT_8_MAX = 255
+    const val UINT_8 = 0xcc.toByte()
+
+    const val UINT_16_MIN = 256
+    const val UINT_16_MAX = 32767
+    const val UINT_16 = 0xcd.toByte()
+
+    const val UINT_32_MIN = 32768
+    const val UINT_32_MAX = 32768*32768/2-1
+    const val UINT_32 = 0xce.toByte()
+
+    const val INT_8 = 0xd0.toByte()
     const val INT_16 = 0xd1.toByte()
     const val INT_32 = 0xd2.toByte()
     const val INT_64 = 0xd3.toByte()

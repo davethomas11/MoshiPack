@@ -111,9 +111,13 @@ class MsgpackReader(private val source: BufferedSource) : JsonReader() {
                     throw AssertionError()
                 }
             }
-            in 0..MsgpackFormat.FIX_INT_MAX -> currentTag
+            MsgpackFormat.UINT_8 -> source.readByte().toInt() and 0xff
+            MsgpackFormat.UINT_16 -> source.readShort().toInt() and 0xffff
+            MsgpackFormat.UINT_32 -> source.readInt().toLong() and 0xffffffff
+            in MsgpackFormat.FIX_INT_MIN..MsgpackFormat.FIX_INT_MAX -> currentTag
             MsgpackFormat.FLOAT_64 -> Double.fromBits(source.readLong())
             MsgpackFormat.FLOAT_32 -> java.lang.Float.intBitsToFloat(source.readInt())
+            MsgpackFormat.INT_8 -> source.readByte()
             MsgpackFormat.INT_32 -> source.readInt()
             MsgpackFormat.INT_16 -> source.readShort()
             MsgpackFormat.INT_64 -> source.readLong()
@@ -357,6 +361,10 @@ class MsgpackReader(private val source: BufferedSource) : JsonReader() {
             in MsgpackFormat.MAP -> peeked = PEEKED_BEGIN_OBJECT
             in MsgpackFormat.STR -> peeked = PEEKED_STRING
             in 0..MsgpackFormat.FIX_INT_MAX,
+            MsgpackFormat.UINT_8,
+            MsgpackFormat.UINT_16,
+            MsgpackFormat.UINT_32,
+            MsgpackFormat.INT_8,
             MsgpackFormat.INT_16,
             MsgpackFormat.INT_32,
             MsgpackFormat.INT_64 -> peeked = PEEKED_LONG

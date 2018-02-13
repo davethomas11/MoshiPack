@@ -65,4 +65,34 @@ class TestAgainstMessagePackJava {
 
         assertEquals(messagePackResult.readByteString().hex(), moshiPackResult.readByteString().hex())
     }
+
+    @Test
+    fun comparisonUInt8() {
+        val packer = MessagePack.newDefaultBufferPacker()
+        packer.packMapHeader(2)
+        packer.packString("compact")
+        packer.packBoolean(true)
+        packer.packString("schema")
+        packer.packShort(200)
+
+        val messagePackResult = Buffer().apply { write(packer.toByteArray()) }
+        val moshiPackResult = MoshiPack.pack(ThePlug().apply { schema = 200 })
+
+        assertEquals(messagePackResult.readByteString().hex(), moshiPackResult.readByteString().hex())
+    }
+
+    @Test
+    fun comparisonUInt16() {
+        val packer = MessagePack.newDefaultBufferPacker()
+        packer.packMapHeader(2)
+        packer.packString("compact")
+        packer.packBoolean(true)
+        packer.packString("schema")
+        packer.packShort(32767)
+
+        val messagePackResult = Buffer().apply { write(packer.toByteArray()) }
+        val moshiPackResult = MoshiPack.pack(ThePlug().apply { schema = 32767 })
+
+        assertEquals(messagePackResult.readByteString().hex(), moshiPackResult.readByteString().hex())
+    }
 }
