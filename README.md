@@ -5,6 +5,10 @@
 Just getting started here.
 Inspired by https://twitter.com/kaushikgopal/status/961426258818039808
 
+This is an implementation of MessagePack serialization and deserialization built ontop of Moshi to take advantage of Moshi's type adapters and utilizes okio for reading and writing MessagePack bytes.
+
+The library is intended to be consumed in a Kotlin project, and is not intended for Java use.
+
 ----
 
 ## Status -> In development ( Not ready ) ```Baking```
