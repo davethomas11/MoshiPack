@@ -13,10 +13,10 @@ class MoshiPack(private var builder: Moshi.Builder.() -> kotlin.Unit = {},
     val msgpackToJson = FormatInterchange(Format.Msgpack(), Format.Json())
 
     companion object {
-        inline fun <reified T> pack(value: T, moshi: Moshi) =
+        inline fun <reified T> pack(value: T, moshi: Moshi): BufferedSource =
                 Buffer().also { moshi.adapter<T>(T::class.java).toJson(MsgpackWriter(it), value) }
 
-        inline fun <reified T> pack(value: T, crossinline builder: Moshi.Builder.() -> Unit = {}) =
+        inline fun <reified T> pack(value: T, crossinline builder: Moshi.Builder.() -> Unit = {}): BufferedSource =
                 Buffer().also { moshiAdapter<T>(T::class.java, builder).toJson(MsgpackWriter(it), value) }
 
         inline fun <reified T> unpack(source: BufferedSource, moshi: Moshi) =
@@ -50,5 +50,5 @@ class MoshiPack(private var builder: Moshi.Builder.() -> kotlin.Unit = {},
     fun msgpackToJson(bytes: ByteArray) = msgpackToJson(Buffer().apply { write(bytes) })
     fun msgpackToJson(source: BufferedSource) = msgpackToJson.transform(source).readUtf8()
     fun jsonToMsgpack(jsonString: String) = jsonToMsgpack(Buffer().apply { writeUtf8(jsonString) })
-    fun jsonToMsgpack(source: BufferedSource) = jsonToMsgpack.transform(source)
+    fun jsonToMsgpack(source: BufferedSource): BufferedSource = jsonToMsgpack.transform(source)
 }
