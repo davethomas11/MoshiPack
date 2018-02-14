@@ -1,5 +1,6 @@
 import com.daveanthonythomas.moshipack.MoshiPack
 import com.squareup.moshi.Moshi
+import com.squareup.moshi.MsgpackFormat
 import com.squareup.moshi.MsgpackReader
 import okio.Buffer
 import okio.ByteString
@@ -34,7 +35,7 @@ class TestMessagePackReader {
         val buffer = Buffer()
         buffer.write(ByteString.decodeHex("93$pizzabytes$pizzabytes$pizzabytes"))
 
-        val pizzas: List<Pizza> = MoshiPack.unpackList(buffer, ofClass = Pizza::class.java)
+        val pizzas: List<Pizza> = MoshiPack.unpack(buffer)
 
         assertEquals(3, pizzas.size)
 
@@ -111,4 +112,31 @@ class TestMessagePackReader {
         }
     }
 
+    @Test
+    fun testList() {
+
+        val buffer = Buffer()
+        buffer += "92"
+
+        buffer += "81"
+        buffer += "a4${"eggs".hex}"
+        buffer += "95"
+        (1 until 6).forEach {
+            buffer += "81"
+            buffer += "a4${"size".hex}"
+            buffer.writeByte(it)
+        }
+
+        buffer += "81"
+        buffer += "a4${"eggs".hex}"
+        buffer += "95"
+        (1 until 6).forEach {
+            buffer += "81"
+            buffer += "a4${"size".hex}"
+            buffer.writeByte(it)
+        }
+
+        val list: List<Nest> = MoshiPack().unpack(buffer)
+        val nest: Nest = list[0]
+    }
 }

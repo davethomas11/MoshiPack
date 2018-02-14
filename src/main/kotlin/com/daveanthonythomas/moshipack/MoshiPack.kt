@@ -5,6 +5,7 @@ import okio.Buffer
 import okio.BufferedSource
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
+import java.lang.reflect.WildcardType
 
 class MoshiPack(private var builder: Moshi.Builder.() -> kotlin.Unit = {},
                 var moshi: Moshi = MoshiPack.moshi(builder)) {
@@ -17,26 +18,23 @@ class MoshiPack(private var builder: Moshi.Builder.() -> kotlin.Unit = {},
                 Buffer().also { moshi.adapter<T>(T::class.java).toJson(MsgpackWriter(it), value) }
 
         inline fun <reified T> pack(value: T, crossinline builder: Moshi.Builder.() -> Unit = {}): BufferedSource =
-                Buffer().also { moshiAdapter<T>(T::class.java, builder).toJson(MsgpackWriter(it), value) }
+               pack(value, moshi(builder))
 
-        inline fun <reified T> unpack(source: BufferedSource, moshi: Moshi) =
-                moshi.adapter<T>(T::class.java).fromJson(MsgpackReader(source)) as T
+        inline fun <reified T> unpack(source: BufferedSource, moshi: Moshi): T  {
+            val type: Type = object : TypeReference<T>() {}.type
+            var adapter: JsonAdapter<T>
+            try {
+                // TODO: Map<Any, Any> is causing a crash in Moshi, investigate this.
+                adapter = moshi.adapter<T>(type)
+            } catch (e: IllegalArgumentException) {
+                // Fallback fixes Map<Any, Any> crash
+                adapter = moshi.adapter<T>(T::class.java)
+            }
+            return adapter.fromJson(MsgpackReader(source)) as T
+        }
 
-        inline fun <reified T> unpack(source: BufferedSource, crossinline builder: Moshi.Builder.() -> Unit = {}) =
-                moshiAdapter<T>(T::class.java, builder).fromJson(MsgpackReader(source)) as T
-
-        inline fun <reified T> unpackList(source: BufferedSource, ofClass: Class<*>,
-                                          crossinline builder: Moshi.Builder.() -> Unit = {}) =
-                moshiAdapter<T>(Types.newParameterizedType(T::class.java, ofClass), builder)
-                        .fromJson(MsgpackReader(source)) as T
-
-
-        inline fun <reified T> unpackList(source: BufferedSource, parameterizedType: ParameterizedType,
-                                          crossinline builder: Moshi.Builder.() -> Unit = {}) =
-                moshiAdapter<T>(parameterizedType, builder).fromJson(MsgpackReader(source)) as T
-
-        inline fun <reified T> moshiAdapter(type: Type, crossinline builder: Moshi.Builder.() -> Unit = {}) =
-                moshi(builder).adapter<T>(type)
+        inline fun <reified T> unpack(source: BufferedSource, crossinline builder: Moshi.Builder.() -> Unit = {}): T =
+                unpack(source, moshi(builder))
 
         inline fun moshi(crossinline  builder: Moshi.Builder.() -> Unit = {}) =
                 Moshi.Builder().apply(builder).build()
@@ -45,7 +43,7 @@ class MoshiPack(private var builder: Moshi.Builder.() -> kotlin.Unit = {},
     inline fun <reified T> pack(value: T) = MoshiPack.pack(value, moshi)
     inline fun <reified T> packToByteArray(value: T): ByteArray = MoshiPack.pack(value, moshi).readByteArray()
     inline fun <reified T> unpack(bytes: ByteArray): T = unpack(Buffer().apply { write(bytes) })
-    inline fun <reified T> unpack(source: BufferedSource) = MoshiPack.unpack<T>(source, moshi)
+    inline fun <reified T> unpack(source: BufferedSource): T = MoshiPack.unpack(source, moshi)
 
     fun msgpackToJson(bytes: ByteArray) = msgpackToJson(Buffer().apply { write(bytes) })
     fun msgpackToJson(source: BufferedSource) = msgpackToJson.transform(source).readUtf8()
