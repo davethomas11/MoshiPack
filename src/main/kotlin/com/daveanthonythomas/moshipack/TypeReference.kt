@@ -20,7 +20,6 @@ abstract class TypeReference<T> {
             throw RuntimeException("Missing type parameter.")
         }
 
-        // TODO: Support more than one parameter in base Generic type
         val args = (superclass as ParameterizedType).actualTypeArguments
         this.type = args[0]
     }
