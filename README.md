@@ -3,12 +3,11 @@ MoshiPack
 
 [![CircleCI](https://circleci.com/gh/davethomas11/MoshiPack/tree/master.svg?style=svg)](https://circleci.com/gh/davethomas11/MoshiPack/tree/master) [![Release](https://jitpack.io/v/davethomas11/MoshiPack.svg)](https://jitpack.io/#davethomas11/MoshiPack)
 
-Just getting started here.
-Inspired by https://twitter.com/kaushikgopal/status/961426258818039808
-
-This is an implementation of MessagePack serialization and deserialization built ontop of Moshi to take advantage of Moshi's type adapters and utilizes okio for reading and writing MessagePack bytes.
+This is a Kotilin implementation of MessagePack serialization and deserialization built ontop of Moshi to take advantage of Moshi's type adapters and utilizes okio for reading and writing MessagePack bytes.
 
 The library is intended to be consumed in a Kotlin project, and is not intended for Java use.
+
+Inspired by https://twitter.com/kaushikgopal/status/961426258818039808
 
 See [Moshi](https://github.com/square/moshi) for adapter usage and reference.
 
