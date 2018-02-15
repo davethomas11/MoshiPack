@@ -9,9 +9,9 @@ object MsgpackFormat {
     const val FIX_INT_MIN = -32
 
 
-    const val SIZE_8 = (2e8 - 1).toLong()
-    const val SIZE_16 = (2e16 - 1).toLong()
-    const val SIZE_32 = (2e32 - 1).toLong()
+    const val SIZE_8 = 255L
+    const val SIZE_16 = 65535L
+    const val SIZE_32 = 4294967295
 
     const val NIL = 0xc0.toByte()
     const val FALSE = 0xc2.toByte()
