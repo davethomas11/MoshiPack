@@ -137,7 +137,7 @@ class TestAgainstMessagePackJava {
         packer.packLong(-2020900943243289)
 
         val messagePackResult = Buffer().apply { write(packer.toByteArray()) }
-        val moshiPackResult = MoshiPack().jsonToMsgpack("{'compact':true,'schema':-2020900943243289}")
+        val moshiPackResult = MoshiPack.jsonToMsgpack("{'compact':true,'schema':-2020900943243289}")
 
         assertEquals(messagePackResult.readByteString().hex(), moshiPackResult.readByteString().hex())
     }
@@ -170,5 +170,74 @@ class TestAgainstMessagePackJava {
         val moshiPackResult = MoshiPack.pack(TestClass())
 
         assertEquals(messagePackResult.readByteString().hex(), moshiPackResult.readByteString().hex())
+    }
+
+    @Test
+    fun string() {
+        val string = "Nice little string value!"
+        val packer = MessagePack.newDefaultBufferPacker()
+        packer.packString(string)
+
+        val messagePackResult = Buffer().apply { write(packer.toByteArray()) }
+        val moshiPackResult = MoshiPack.pack(string)
+
+        assertEquals(messagePackResult.readByteString().hex(), moshiPackResult.readByteString().hex())
+    }
+
+    @Test
+    fun stringDecode() {
+        val string = "Nice little string value!"
+        val packer = MessagePack.newDefaultBufferPacker()
+        packer.packString(string)
+
+        val moshiPackResult: String = MoshiPack.unpack(packer.toByteArray())
+
+        assertEquals(string, moshiPackResult)
+    }
+
+    @Test
+    fun stringLong() {
+        val string = "Nice little string value! Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum."
+        val packer = MessagePack.newDefaultBufferPacker()
+        packer.packString(string)
+
+        val messagePackResult = Buffer().apply { write(packer.toByteArray()) }
+        val moshiPackResult = MoshiPack.pack(string)
+
+        assertEquals(messagePackResult.readByteString().hex(), moshiPackResult.readByteString().hex())
+    }
+
+    @Test
+    fun stringDecodeLong() {
+        val string = "Nice little string value! Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum."
+        val packer = MessagePack.newDefaultBufferPacker()
+        packer.packString(string)
+
+        val moshiPackResult: String = MoshiPack.unpack(packer.toByteArray())
+
+        assertEquals(string, moshiPackResult)
+    }
+
+    @Test
+    fun string8() {
+        val string = "1234567890123456789012345678901234567890"
+        val packer = MessagePack.newDefaultBufferPacker()
+        packer.packString(string)
+
+        val messagePackResult = Buffer().apply { write(packer.toByteArray()) }
+        val moshiPackResult = MoshiPack.pack(string)
+
+        assertEquals(messagePackResult.readByteString().hex(), moshiPackResult.readByteString().hex())
+    }
+
+    @Test
+    fun string8Decode() {
+        val string = "1234567890123456789012345678901234567890"
+        val packer = MessagePack.newDefaultBufferPacker()
+        packer.packString(string)
+
+        val moshiPackResult: String = MoshiPack.unpack(packer.toByteArray())
+
+        assertEquals(string, moshiPackResult)
     }
 }

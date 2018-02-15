@@ -138,5 +138,35 @@ class TestMessagePackReader {
 
         val list: List<Nest> = MoshiPack().unpack(buffer)
         val nest: Nest = list[0]
+
+        assertEquals(nest.eggs[0].size, 1)
+    }
+
+    @Test
+    fun listAny() {
+        val buffer = Buffer()
+        buffer += "92"
+
+        buffer += "81"
+        buffer += "a4${"eggs".hex}"
+        buffer += "95"
+        (1 until 6).forEach {
+            buffer += "81"
+            buffer += "a4${"size".hex}"
+            buffer.writeByte(it)
+        }
+
+        buffer += "81"
+        buffer += "a4${"eggs".hex}"
+        buffer += "95"
+        (1 until 6).forEach {
+            buffer += "81"
+            buffer += "a4${"size".hex}"
+            buffer.writeByte(it)
+        }
+
+        val list: List<Any> = MoshiPack().unpack(buffer)
+
+        assertEquals(2, list.size)
     }
 }

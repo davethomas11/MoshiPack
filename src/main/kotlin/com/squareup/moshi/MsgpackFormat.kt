@@ -40,10 +40,11 @@ object MsgpackFormat {
     const val INT_64 = 0xd3.toByte()
 
     val FIX_STR = MsgpackFormatType(0xa0.toByte(), 31, isFix = true)
-    //private val STR_8 = com.squareup.moshi.MsgpackFormatType(0xd9, SIZE_8)
+
+    val STR_8 = MsgpackFormatType(0xd9.toByte(), SIZE_8)
     val STR_16 = MsgpackFormatType(0xda.toByte(), SIZE_16)
     val STR_32 = MsgpackFormatType(0xdb.toByte(), SIZE_32)
-    val STR = arrayOf(FIX_STR, STR_16, STR_32)
+    val STR = arrayOf(FIX_STR, STR_8, STR_16, STR_32)
 
     val FIX_ARRAY = MsgpackFormatType(0x90.toByte(), 15, isFix = true)
     val ARRAY_16 = MsgpackFormatType(0xdc.toByte(), SIZE_16)
@@ -76,6 +77,7 @@ data class MsgpackFormatType(val tag: Byte, val maxSize: Long, val isFix: Boolea
     }
 
     fun readSize(source: BufferedSource, value: Byte): Long = if (isFix) (value - tag).toLong() else when (maxSize) {
+        MsgpackFormat.SIZE_8 -> source.readByte().toLong()
         MsgpackFormat.SIZE_16 -> source.readShort().toLong()
         MsgpackFormat.SIZE_32 -> source.readInt().toLong()
         else -> throw IllegalStateException("Unable to read size for tag type: 0x" + value.toString(16))
@@ -83,10 +85,7 @@ data class MsgpackFormatType(val tag: Byte, val maxSize: Long, val isFix: Boolea
 
     private fun writeSize(sink: BufferedSink, size: Int) {
         when (maxSize) {
-            //TODO com.squareup.moshi.MsgpackFormat.SIZE_8 -> sink.writeShort(size)
-
-            // Need to make sure these are unsigned ints as well
-            // Not sure they are written in unsigned format or not
+            MsgpackFormat.SIZE_8 -> sink.writeByte(size)
             MsgpackFormat.SIZE_16 -> sink.writeShort(size)
             MsgpackFormat.SIZE_32 -> sink.writeInt(size)
         }

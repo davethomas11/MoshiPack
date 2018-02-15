@@ -7,15 +7,13 @@ class TestTransform {
 
     @Test
     fun fromJsonToMsgpack() {
-        val moshiPack = MoshiPack()
-        val pack = moshiPack.jsonToMsgpack("{\"compact\":true,\"schema\":0}")
+        val pack = MoshiPack.jsonToMsgpack("{\"compact\":true,\"schema\":0}")
         assertEquals("82a7${"compact".hex}c3a6${"schema".hex}00", pack.readByteString().hex())
     }
 
     @Test
     fun fromMsgpackToJson() {
-        val moshiPack = MoshiPack()
-        val json = moshiPack.msgpackToJson(ByteString.decodeHex("82a7${"compact".hex}c3a6${"schema".hex}00").toByteArray())
+        val json = MoshiPack.msgpackToJson(ByteString.decodeHex("82a7${"compact".hex}c3a6${"schema".hex}00").toByteArray())
         assertEquals("{\"compact\":true,\"schema\":0.0}", json)
     }
 }
