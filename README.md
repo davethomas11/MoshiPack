@@ -133,3 +133,69 @@ A Map of Any, Any
 val car: Map<Any, Any> = MoshiPack.unpack(carBytes)
 ```
 
+### msgpackToJson
+
+Convert directly from MessagePack bytes to JSON. Use this method for the most effecient implementation as no objects are instantiated in the process. This uses the ```FormatInterchange``` class to match implementations of ```JsonReader``` and a ```JsonWriter```. If you wanted to say support XML as a direct conversion to and from, you could implement Moshi's ```JsonReader``` and ```JsonWriter``` classes and use the ```FormatInterchange``` class to convert directly to other formats. **Returns** ```String``` containing a JSON representation of the MessagePack data
+
+Instance versions: (takes ```ByteArray``` or ```BufferedSource```)
+```kotlin
+MoshiPack().msgpackToJson(byteArray)
+```
+
+```kotlin
+MoshiPack().msgpackToJson(bufferedSource)
+```
+
+Static versions: (takes ```ByteArray``` or ```BufferedSource```)
+```kotlin
+MoshiPack.msgpackToJson(byteArray)
+```
+
+```kotlin
+MoshiPack.msgpackToJson(bufferedSource)
+```
+
+### jsonToMsgpack
+
+Convert directly from JSON to MessagePack bytes. Use this method for the most effecient implementation as no objects are instantiated in the process. **Returns** ```BufferedSource``` 
+
+Instance versions: (takes ```String``` or ```BufferedSource```)
+```kotlin
+MoshiPack().jsonToMsgpack(jsonString)
+```
+
+```kotlin
+MoshiPack().jsonToMsgpack(bufferedSource)
+```
+
+Static versions: (takes ```String``` or ```BufferedSource```)
+```kotlin
+MoshiPack.jsonToMsgpack(jsonString)
+```
+
+```kotlin
+MoshiPack.jsonToMsgpack(bufferedSource)
+```
+
+### MoshiPack - constructor + Moshi builder
+
+The ```MoshiPack``` constructor takes an optional ```Moshi.Builder.() -> Unit``` lambda which is applied to the builder that is used to instantiate the ```Moshi``` instance it uses.
+
+Example adding custom adapter:
+```kotlin
+val moshiPack = MoshiPack({
+  add(customAdapter)
+})
+```
+
+```Moshi``` is also a settable property which can be changed on a ```MoshiPack``` instance:
+```kotlin
+val m = MoshiPack()
+m.moshi = Moshi.Builder().build()
+```
+
+The static version of the API also can be passed a lambda to applied to the ```Moshi.Builder``` used to instantiate ```Moshi```:
+
+```kotlin
+MoshiPack.pack(someBytes) { add(customAdapter) }
+```
