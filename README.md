@@ -18,7 +18,7 @@ Currently testing against multiple data types.
 
 ---
 
-### Convert an object to MessagePack format
+### Convert an object to [MessagePack](https://msgpack.org) format
 
 ```kotlin
 data class MessagePackWebsitePlug(var compact: Boolean = true, var schema: Int = 0)
