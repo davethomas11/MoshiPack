@@ -80,7 +80,7 @@ MoshiPack().packToByteArray(anObject)
 
 Static can be done
 ```kotlin
-MoshiPack().pack(anObject).readByteArray()
+MoshiPack.pack(anObject).readByteArray()
 ```
 
 ### unpack
