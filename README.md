@@ -199,3 +199,29 @@ The static version of the API also can be passed a lambda to applied to the ```M
 ```kotlin
 MoshiPack.pack(someBytes) { add(customAdapter) }
 ```
+
+---
+
+Kotiln Support
+--------------
+
+Since this library is intended for Kotlin use, the ```moshi-kotlin``` artifact is included as a depedency. A ```KotlinJsonAdapterFactory``` is added by default to the instantiated ```Moshi``` that ```MoshiPack``` uses.
+This adapter allows for the use of ```Moshi```'s annotaions in Kotlin. To learn more about it see the [```Moshi```](https://github.com/square/moshi) documentation.
+
+
+ProGuard
+--------
+
+From ```Moshi```'s README.md;
+If you are using ProGuard you might need to add the following options:
+```
+-dontwarn okio.**
+-dontwarn javax.annotation.**
+-keepclasseswithmembers class * {
+    @com.squareup.moshi.* <methods>;
+}
+-keep @com.squareup.moshi.JsonQualifier interface *
+-keepclassmembers class kotlin.Metadata {
+    public <methods>;
+}
+```
