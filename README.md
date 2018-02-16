@@ -208,6 +208,10 @@ Kotiln Support
 Since this library is intended for Kotlin use, the ```moshi-kotlin``` artifact is included as a depedency. A ```KotlinJsonAdapterFactory``` is added by default to the instantiated ```Moshi``` that ```MoshiPack``` uses.
 This adapter allows for the use of ```Moshi```'s annotaions in Kotlin. To learn more about it see the [```Moshi```](https://github.com/square/moshi) documentation.
 
+If you'd like to use ```Moshi``` with out a ```KotlinJsonAdapterFactory``` supply a ```Moshi``` instance for ```MoshiPack```:
+```kotlin
+MoshiPack(moshi = Moshi.Builder().build)
+```
 
 ProGuard
 --------
