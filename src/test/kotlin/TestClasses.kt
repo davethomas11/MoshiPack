@@ -13,4 +13,9 @@ data class Nest(var eggs: List<Egg>)
 
 data class Egg(var size: Int = 2)
 
-data class Transients(var one: String, @Transient var two: String, var three: String)
+data class Transients(var one: String, var three: String) {
+    @Transient var two: String = "Transient"
+}
+
+// Does not work with KotlinJsonAdapterFactory
+data class Transients2(var one:String, @Transient var two: String, var three: String)

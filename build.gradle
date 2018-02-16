@@ -22,6 +22,7 @@ repositories {
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     compile "com.squareup.moshi:moshi:$moshi_version"
+    compile "com.squareup.moshi:moshi-kotlin:$moshi_version"
     testCompile "junit:junit:4.12"
     testCompile "org.msgpack:msgpack-core:0.8.14"
 }

@@ -46,7 +46,7 @@ class MoshiPack(private var builder: Moshi.Builder.() -> kotlin.Unit = {},
                 unpack(Buffer().apply { write(bytes) }, builder)
 
         inline fun moshi(crossinline builder: Moshi.Builder.() -> Unit = {}) =
-                Moshi.Builder().apply(builder).build()
+                Moshi.Builder().apply(builder).add(KotlinJsonAdapterFactory()).build()
 
         fun msgpackToJson(bytes: ByteArray): String = msgpackToJson(Buffer().apply { write(bytes) })
         fun msgpackToJson(source: BufferedSource) = FormatInterchange(Format.Msgpack(), Format.Json())

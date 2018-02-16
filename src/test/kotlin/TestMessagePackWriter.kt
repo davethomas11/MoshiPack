@@ -85,8 +85,16 @@ class TestMessagePackWriter {
 
     @Test
     fun transientsAreNotWritten() {
-        val transients = Transients("A", "B", "C")
+        val transients = Transients("A", "C").apply { two = "B" }
         val buffer = MoshiPack().pack(transients)
+
+        assertEquals("82a3${"one".hex}a141a5${"three".hex}a143", buffer.readByteString().hex())
+    }
+
+    @Test
+    fun transientsAreNotWrittenMoshiNoKotlinSupport() {
+        val transients = Transients2("A", "B", "C")
+        val buffer = MoshiPack(moshi = Moshi.Builder().build()).pack(transients)
 
         assertEquals("82a3${"one".hex}a141a5${"three".hex}a143", buffer.readByteString().hex())
     }
