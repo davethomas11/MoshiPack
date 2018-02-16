@@ -3,12 +3,11 @@ MoshiPack
 
 [![CircleCI](https://circleci.com/gh/davethomas11/MoshiPack/tree/master.svg?style=svg)](https://circleci.com/gh/davethomas11/MoshiPack/tree/master) [![Release](https://jitpack.io/v/davethomas11/MoshiPack.svg)](https://jitpack.io/#davethomas11/MoshiPack)
 
-Just getting started here.
-Inspired by https://twitter.com/kaushikgopal/status/961426258818039808
-
-This is an implementation of MessagePack serialization and deserialization built ontop of Moshi to take advantage of Moshi's type adapters and utilizes okio for reading and writing MessagePack bytes.
+This is a Kotilin implementation of MessagePack serialization and deserialization built ontop of Moshi to take advantage of Moshi's type adapters and utilizes okio for reading and writing MessagePack bytes.
 
 The library is intended to be consumed in a Kotlin project, and is not intended for Java use.
+
+Inspired by https://twitter.com/kaushikgopal/status/961426258818039808
 
 See [Moshi](https://github.com/square/moshi) for adapter usage and reference.
 
@@ -19,7 +18,7 @@ Currently testing against multiple data types.
 
 ---
 
-### Convert an object to MessagePack format
+### Convert an object to [MessagePack](https://msgpack.org) format
 
 ```kotlin
 data class MessagePackWebsitePlug(var compact: Boolean = true, var schema: Int = 0)
@@ -81,7 +80,7 @@ MoshiPack().packToByteArray(anObject)
 
 Static can be done
 ```kotlin
-MoshiPack().pack(anObject).readByteArray()
+MoshiPack.pack(anObject).readByteArray()
 ```
 
 ### unpack
@@ -134,3 +133,99 @@ A Map of Any, Any
 val car: Map<Any, Any> = MoshiPack.unpack(carBytes)
 ```
 
+### msgpackToJson
+
+Convert directly from MessagePack bytes to JSON. Use this method for the most effecient implementation as no objects are instantiated in the process. This uses the ```FormatInterchange``` class to match implementations of ```JsonReader``` and a ```JsonWriter```. If you wanted to say support XML as a direct conversion to and from, you could implement Moshi's ```JsonReader``` and ```JsonWriter``` classes and use the ```FormatInterchange``` class to convert directly to other formats. **Returns** ```String``` containing a JSON representation of the MessagePack data
+
+Instance versions: (takes ```ByteArray``` or ```BufferedSource```)
+```kotlin
+MoshiPack().msgpackToJson(byteArray)
+```
+
+```kotlin
+MoshiPack().msgpackToJson(bufferedSource)
+```
+
+Static versions: (takes ```ByteArray``` or ```BufferedSource```)
+```kotlin
+MoshiPack.msgpackToJson(byteArray)
+```
+
+```kotlin
+MoshiPack.msgpackToJson(bufferedSource)
+```
+
+### jsonToMsgpack
+
+Convert directly from JSON to MessagePack bytes. Use this method for the most effecient implementation as no objects are instantiated in the process. **Returns** ```BufferedSource``` 
+
+Instance versions: (takes ```String``` or ```BufferedSource```)
+```kotlin
+MoshiPack().jsonToMsgpack(jsonString)
+```
+
+```kotlin
+MoshiPack().jsonToMsgpack(bufferedSource)
+```
+
+Static versions: (takes ```String``` or ```BufferedSource```)
+```kotlin
+MoshiPack.jsonToMsgpack(jsonString)
+```
+
+```kotlin
+MoshiPack.jsonToMsgpack(bufferedSource)
+```
+
+### MoshiPack - constructor + Moshi builder
+
+The ```MoshiPack``` constructor takes an optional ```Moshi.Builder.() -> Unit``` lambda which is applied to the builder that is used to instantiate the ```Moshi``` instance it uses.
+
+Example adding custom adapter:
+```kotlin
+val moshiPack = MoshiPack({
+  add(customAdapter)
+})
+```
+
+```Moshi``` is also a settable property which can be changed on a ```MoshiPack``` instance:
+```kotlin
+val m = MoshiPack()
+m.moshi = Moshi.Builder().build()
+```
+
+The static version of the API also can be passed a lambda to applied to the ```Moshi.Builder``` used to instantiate ```Moshi```:
+
+```kotlin
+MoshiPack.pack(someBytes) { add(customAdapter) }
+```
+
+---
+
+Kotiln Support
+--------------
+
+Since this library is intended for Kotlin use, the ```moshi-kotlin``` artifact is included as a depedency. A ```KotlinJsonAdapterFactory``` is added by default to the instantiated ```Moshi``` that ```MoshiPack``` uses.
+This adapter allows for the use of ```Moshi```'s annotaions in Kotlin. To learn more about it see the [```Moshi```](https://github.com/square/moshi) documentation.
+
+If you'd like to use ```Moshi``` with out a ```KotlinJsonAdapterFactory``` supply a ```Moshi``` instance for ```MoshiPack```:
+```kotlin
+MoshiPack(moshi = Moshi.Builder().build)
+```
+
+ProGuard
+--------
+
+From ```Moshi```'s README.md;
+If you are using ProGuard you might need to add the following options:
+```
+-dontwarn okio.**
+-dontwarn javax.annotation.**
+-keepclasseswithmembers class * {
+    @com.squareup.moshi.* <methods>;
+}
+-keep @com.squareup.moshi.JsonQualifier interface *
+-keepclassmembers class kotlin.Metadata {
+    public <methods>;
+}
+```
