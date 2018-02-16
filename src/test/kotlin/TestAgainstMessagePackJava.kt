@@ -1,5 +1,6 @@
 import com.daveanthonythomas.moshipack.FormatInterchange
 import com.daveanthonythomas.moshipack.MoshiPack
+import com.squareup.moshi.MsgpackFormat
 import okio.Buffer
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -239,5 +240,17 @@ class TestAgainstMessagePackJava {
         val moshiPackResult: String = MoshiPack.unpack(packer.toByteArray())
 
         assertEquals(string, moshiPackResult)
+    }
+
+    @Test
+    fun string32Decode() {
+        val longString = StringBuilder("Long long string")
+        (0..MsgpackFormat.SIZE_16).forEach { longString.append("a") }
+        val packer = MessagePack.newDefaultBufferPacker()
+        packer.packString(longString.toString())
+
+        val moshiPackResult: String = MoshiPack.unpack(packer.toByteArray())
+
+        assertEquals(longString.toString(), moshiPackResult)
     }
 }
