@@ -1,5 +1,8 @@
 package com.daveanthonythomas.moshipack
 
+import com.squareup.moshi.Types
+import sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl
+import sun.reflect.generics.reflectiveObjects.WildcardTypeImpl
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
 
@@ -21,6 +24,19 @@ abstract class TypeReference<T> {
         }
 
         val args = (superclass as ParameterizedType).actualTypeArguments
-        this.type = args[0]
+        val theType = args[0]
+
+        if (theType is ParameterizedType) {
+            val bounded = theType.actualTypeArguments.map {
+                if (it is WildcardTypeImpl) {
+                    if (it.upperBounds?.size?.compareTo(0) ?: 0 > 0) {
+                        it.upperBounds[0]
+                    } else it
+                } else it
+            }
+            this.type = Types.newParameterizedType(theType.rawType, *bounded.toTypedArray())
+        } else {
+            this.type = theType
+        }
     }
 }

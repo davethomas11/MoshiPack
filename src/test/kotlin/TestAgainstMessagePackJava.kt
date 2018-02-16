@@ -253,4 +253,25 @@ class TestAgainstMessagePackJava {
 
         assertEquals(longString.toString(), moshiPackResult)
     }
+
+    @Test
+    fun lotsOfParams() {
+        val packer = MessagePack.newDefaultBufferPacker()
+        packer.packMapHeader(25)
+        (0 until 25).forEach {
+            packer.packString("abc" + it)
+            packer.packInt(it)
+        }
+
+        val moshiPackResult: Map<String, Int> = MoshiPack.unpack(packer.toByteArray())
+
+        assertEquals(25, moshiPackResult.size)
+
+        var x = 0
+        moshiPackResult.forEach {
+            assertEquals(it.value, x)
+            assertEquals(it.key, "abc" + x)
+            x++
+        }
+    }
 }

@@ -25,13 +25,10 @@ class MoshiPack(private var builder: Moshi.Builder.() -> kotlin.Unit = {},
 
         inline fun <reified T> unpack(source: BufferedSource, moshi: Moshi): T {
             val type: Type = object : TypeReference<T>() {}.type
-            var adapter: JsonAdapter<T>
-            try {
-                // TODO: Map<Any, Any> & List<Any> is causing a crash in Moshi, investigate this.
-                adapter = moshi.adapter<T>(type)
+            val adapter = try {
+                moshi.adapter<T>(type)
             } catch (e: IllegalArgumentException) {
-                // Fallback fixes Map<Any, Any>/List<Any> crash
-                adapter = moshi.adapter<T>(T::class.java)
+                moshi.adapter<T>(T::class.java)
             }
             return adapter.fromJson(MsgpackReader(source)) as T
         }
