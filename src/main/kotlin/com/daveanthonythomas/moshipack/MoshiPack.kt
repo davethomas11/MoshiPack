@@ -25,12 +25,7 @@ class MoshiPack(private var builder: Moshi.Builder.() -> kotlin.Unit = {},
 
         inline fun <reified T> unpack(source: BufferedSource, moshi: Moshi): T {
             val type: Type = object : TypeReference<T>() {}.type
-            val adapter = try {
-                moshi.adapter<T>(type)
-            } catch (e: IllegalArgumentException) {
-                moshi.adapter<T>(T::class.java)
-            }
-            return adapter.fromJson(MsgpackReader(source)) as T
+            return moshi.adapter<T>(type).fromJson(MsgpackReader(source)) as T
         }
 
         inline fun <reified T> unpack(source: BufferedSource, crossinline builder: Moshi.Builder.() -> Unit = {}): T =

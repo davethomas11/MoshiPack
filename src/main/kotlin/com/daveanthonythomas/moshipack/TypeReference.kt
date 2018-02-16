@@ -24,19 +24,17 @@ abstract class TypeReference<T> {
         }
 
         val args = (superclass as ParameterizedType).actualTypeArguments
-        val theType = args[0]
-
-        if (theType is ParameterizedType) {
-            val bounded = theType.actualTypeArguments.map {
-                if (it is WildcardTypeImpl) {
-                    if (it.upperBounds?.size?.compareTo(0) ?: 0 > 0) {
-                        it.upperBounds[0]
-                    } else it
-                } else it
-            }
-            this.type = Types.newParameterizedType(theType.rawType, *bounded.toTypedArray())
-        } else {
-            this.type = theType
-        }
+        this.type = forceBounds(args[0])
     }
+
+    private fun forceBounds(type: Type): Type = if (type is ParameterizedType) {
+        val bounded = type.actualTypeArguments.map {
+            forceBounds(if (it is WildcardTypeImpl) {
+                if (it.upperBounds?.size?.compareTo(0) ?: 0 > 0) {
+                    it.upperBounds[0]
+                } else it
+            } else it)
+        }
+        Types.newParameterizedType(type.rawType, *bounded.toTypedArray())
+    } else type
 }
