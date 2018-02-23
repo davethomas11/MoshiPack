@@ -1,4 +1,3 @@
-import com.daveanthonythomas.moshipack.FormatInterchange
 import com.daveanthonythomas.moshipack.MoshiPack
 import com.squareup.moshi.MsgpackFormat
 import okio.Buffer
@@ -171,6 +170,51 @@ class TestAgainstMessagePackJava {
         val moshiPackResult = MoshiPack.pack(TestClass())
 
         assertEquals(messagePackResult.readByteString().hex(), moshiPackResult.readByteString().hex())
+    }
+
+    @Test
+    fun comparisonNegativeFloatingPoint() {
+        val packer = MessagePack.newDefaultBufferPacker()
+        packer.packMapHeader(1)
+        packer.packString("float")
+        packer.packFloat(-202.202F)
+
+        data class TestClass(var float: Float = -202.202F)
+
+        val messagePackResult = Buffer().apply { write(packer.toByteArray()) }
+        val moshiPackResult = MoshiPack.pack(TestClass())
+
+        assertEquals(messagePackResult.readByteString().hex(), moshiPackResult.readByteString().hex())
+    }
+
+    @Test
+    fun comparisonDouble() {
+        val packer = MessagePack.newDefaultBufferPacker()
+        packer.packMapHeader(1)
+        packer.packString("double")
+        packer.packDouble(202.202)
+
+        data class TestClass(var double: Double)
+
+        val result = MoshiPack.unpack<TestClass>(packer.toByteArray())
+
+
+        assertEquals(result.double, 202.202, 0.0)
+    }
+
+    @Test
+    fun comparisonDoubleLarge() {
+        val packer = MessagePack.newDefaultBufferPacker()
+        packer.packMapHeader(1)
+        packer.packString("double")
+        packer.packDouble(202.20223432432422)
+
+        data class TestClass(var double: Double)
+
+        val result = MoshiPack.unpack<TestClass>(packer.toByteArray())
+
+
+        assertEquals(result.double, 202.20223432432422, 0.0)
     }
 
     @Test
