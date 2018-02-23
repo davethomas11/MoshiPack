@@ -11,7 +11,41 @@ Inspired by Kaushik Gopal's [tweet](https://twitter.com/kaushikgopal/status/9614
 
 See [Moshi](https://github.com/square/moshi) for adapter usage and reference.
 
-----
+### Convert an object to [MessagePack](https://msgpack.org) format
+
+```kotlin
+data class MessagePackWebsitePlug(var compact: Boolean = true, var schema: Int = 0)
+
+val moshiPack = MoshiPack()
+val packed: BufferedSource = moshiPack.pack(MessagePackWebsitePlug())
+
+println(packed.readByteString().hex())
+```
+This prints the MessagePack bytes as a hex string **82a7636f6d70616374c3a6736368656d6100**
+
+- **82** - Map with two entries
+- **a7** - String of seven bytes 
+- **63 6f 6d 70 61 63 74** - UTF8 String "compact"
+- **c3** - Boolean value true
+- **a6** - String of size bytes
+- **73 63 68 65 6d 61** - UTF8 String "schema"
+- **00** - Integer value 0
+
+
+### Convert binary MessagePack back to an Object
+```kotlin
+val bytes = ByteString.decodeHex("82a7636f6d70616374c3a6736368656d6100").toByteArray()
+
+val moshiPack = MoshiPack()
+val plug: MessagePackWebsitePlug = moshiPack.unpack(bytes)
+```
+
+### Static API
+
+If you prefer to not instantiate a ```MoshiPack``` instance you can access the API in a static fashion as well. Note this will create a new ```Moshi``` instance every time you make an API call. You may want to use the API this way if you aren't providing ```MoshiPack``` by some form of dependency injection and you do not have any specific builder parameters for ```Moshi```
+
+---
+
 ## Format Support
 
 See [MessagePack format spec](https://github.com/msgpack/msgpack/blob/master/spec.md) for further reference.
@@ -59,41 +93,6 @@ See [MessagePack format spec](https://github.com/msgpack/msgpack/blob/master/spe
 
 ## Status -> Preparing for first release.
 Looking into distribution.
-
----
-
-### Convert an object to [MessagePack](https://msgpack.org) format
-
-```kotlin
-data class MessagePackWebsitePlug(var compact: Boolean = true, var schema: Int = 0)
-
-val moshiPack = MoshiPack()
-val packed: BufferedSource = moshiPack.pack(MessagePackWebsitePlug())
-
-println(packed.readByteString().hex())
-```
-This prints the MessagePack bytes as a hex string **82a7636f6d70616374c3a6736368656d6100**
-
-- **82** - Map with two entries
-- **a7** - String of seven bytes 
-- **63 6f 6d 70 61 63 74** - UTF8 String "compact"
-- **c3** - Boolean value true
-- **a6** - String of size bytes
-- **73 63 68 65 6d 61** - UTF8 String "schema"
-- **00** - Integer value 0
-
-
-### Convert binary MessagePack back to an Object
-```kotlin
-val bytes = ByteString.decodeHex("82a7636f6d70616374c3a6736368656d6100").toByteArray()
-
-val moshiPack = MoshiPack()
-val plug: MessagePackWebsitePlug = moshiPack.unpack(bytes)
-```
-
-### Static API
-
-If you prefer to not instantiate a ```MoshiPack``` instance you can access the API in a static fashion as well. Note this will create a new ```Moshi``` instance every time you make an API call. You may want to use the API this way if you aren't providing ```MoshiPack``` by some form of dependency injection and you do not have any specific builder parameters for ```Moshi```
 
 ---
 
