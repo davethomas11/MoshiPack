@@ -1,5 +1,5 @@
 import com.daveanthonythomas.moshipack.MoshiPack
-import junit.framework.Assert.assertEquals
+import org.junit.Assert.assertEquals
 import org.junit.Test
 
 class TestReadAndWrite {
@@ -15,7 +15,7 @@ class TestReadAndWrite {
 
         assertEquals(255, unmarshalled.num1)
         assertEquals(55.5F, unmarshalled.num2)
-        assertEquals(3, unmarshalled.num3)
+        assertEquals(3.toShort(), unmarshalled.num3)
         assertEquals(500.25, unmarshalled.num4, 0.0)
     }
 

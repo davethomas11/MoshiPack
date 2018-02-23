@@ -1,0 +1,22 @@
+apply plugin: 'kotlin'
+
+def retrofit_version = "2.3.0"
+
+dependencies {
+    compile project(":moshipack")
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+    compile "com.squareup.retrofit2:retrofit:$retrofit_version"
+}
+
+compileKotlin {
+    kotlinOptions.jvmTarget = "1.6"
+}
+compileTestKotlin {
+    kotlinOptions.jvmTarget = "1.6"
+}
+
+test {
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
+}
