@@ -7,16 +7,9 @@ This is a Kotilin implementation of MessagePack serialization and deserializatio
 
 The library is intended to be consumed in a Kotlin project, and is not intended for Java use.
 
-Inspired by https://twitter.com/kaushikgopal/status/961426258818039808
+Inspired by Kaushik Gopal's [tweet](https://twitter.com/kaushikgopal/status/961426258818039808)
 
 See [Moshi](https://github.com/square/moshi) for adapter usage and reference.
-
-----
-
-## Status -> In development ( Getting closer ) ```Broiling```
-Currently testing against multiple data types. 
-
----
 
 ### Convert an object to [MessagePack](https://msgpack.org) format
 
@@ -50,6 +43,56 @@ val plug: MessagePackWebsitePlug = moshiPack.unpack(bytes)
 ### Static API
 
 If you prefer to not instantiate a ```MoshiPack``` instance you can access the API in a static fashion as well. Note this will create a new ```Moshi``` instance every time you make an API call. You may want to use the API this way if you aren't providing ```MoshiPack``` by some form of dependency injection and you do not have any specific builder parameters for ```Moshi```
+
+---
+
+## Format Support
+
+See [MessagePack format spec](https://github.com/msgpack/msgpack/blob/master/spec.md) for further reference.
+<table>
+  <tr><th>format name</th><th>first byte (in binary)</th><th>first byte (in hex)</th><th>Supported</th></tr>
+  <tr><td>positive fixint</td><td>0xxxxxxx</td><td>0x00 - 0x7f</td><td>Yes</font></td></tr>
+  <tr><td>fixmap</td><td>1000xxxx</td><td>0x80 - 0x8f</td><td>Yes</td></tr>
+  <tr><td>fixarray</td><td>1001xxxx</td><td>0x90 - 0x9f</td><td>Yes</td></tr>
+  <tr><td>fixstr</td><td>101xxxxx</td><td>0xa0 - 0xbf</td><td>Yes</td></tr>
+  <tr><td>nil</td><td>11000000</td><td>0xc0</td><td>Yes</td></tr>
+  <tr><td>(never used)</td><td>11000001</td><td>0xc1</td><td>Yes</td></tr>
+  <tr><td>false</td><td>11000010</td><td>0xc2</td><td>Yes</td></tr>
+  <tr><td>true</td><td>11000011</td><td>0xc3</td><td>Yes</td></tr>
+  <tr><td>bin 8</td><td>11000100</td><td>0xc4</td><td>No</td></tr>
+  <tr><td>bin 16</td><td>11000101</td><td>0xc5</td><td>No</td></tr>
+  <tr><td>bin 32</td><td>11000110</td><td>0xc6</td><td>No</td></tr>
+  <tr><td>ext 8</td><td>11000111</td><td>0xc7</td><td>No</td></tr>
+  <tr><td>ext 16</td><td>11001000</td><td>0xc8</td><td>No</td></tr>
+  <tr><td>ext 32</td><td>11001001</td><td>0xc9</td><td>No</td></tr>
+  <tr><td>float 32</td><td>11001010</td><td>0xca</td><td>Yes</td></tr>
+  <tr><td>float 64</td><td>11001011</td><td>0xcb</td><td>Yes</td></tr>
+  <tr><td>uint 8</td><td>11001100</td><td>0xcc</td><td>Yes</td></tr>
+  <tr><td>uint 16</td><td>11001101</td><td>0xcd</td><td>Yes</td></tr>
+  <tr><td>uint 32</td><td>11001110</td><td>0xce</td><td>Yes</td></tr>
+  <tr><td>uint 64</td><td>11001111</td><td>0xcf</td><td>Yes</td></tr>
+  <tr><td>int 8</td><td>11010000</td><td>0xd0</td><td>Yes</td></tr>
+  <tr><td>int 16</td><td>11010001</td><td>0xd1</td><td>Yes</td></tr>
+  <tr><td>int 32</td><td>11010010</td><td>0xd2</td><td>Yes</td></tr>
+  <tr><td>int 64</td><td>11010011</td><td>0xd3</td><td>Yes</td></tr>
+  <tr><td>fixext 1</td><td>11010100</td><td>0xd4</td><td>No</td></tr>
+  <tr><td>fixext 2</td><td>11010101</td><td>0xd5</td><td>No</td></tr>
+  <tr><td>fixext 4</td><td>11010110</td><td>0xd6</td><td>No</td></tr>
+  <tr><td>fixext 8</td><td>11010111</td><td>0xd7</td><td>No</td></tr>
+  <tr><td>fixext 16</td><td>11011000</td><td>0xd8</td><td>No</td></tr>
+  <tr><td>str 8</td><td>11011001</td><td>0xd9</td><td>Yes</td></tr>
+  <tr><td>str 16</td><td>11011010</td><td>0xda</td><td>Yes</td></tr>
+  <tr><td>str 32</td><td>11011011</td><td>0xdb</td><td>Yes</td></tr>
+  <tr><td>array 16</td><td>11011100</td><td>0xdc</td><td>Yes</td></tr>
+  <tr><td>array 32</td><td>11011101</td><td>0xdd</td><td>Yes</td></tr>
+  <tr><td>map 16</td><td>11011110</td><td>0xde</td><td>Yes</td></tr>
+  <tr><td>map 32</td><td>11011111</td><td>0xdf</td><td>Yes</td></tr>
+  <tr><td>negative fixint</td><td>111xxxxx</td><td>0xe0 - 0xff</td><td>Yes</td></tr>
+</table>
+----
+
+## Status -> Preparing for first release.
+Looking into distribution.
 
 ---
 
