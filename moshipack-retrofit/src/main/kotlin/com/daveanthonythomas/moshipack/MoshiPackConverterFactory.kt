@@ -1,4 +1,5 @@
-import com.daveanthonythomas.moshipack.MoshiPack
+package com.daveanthonythomas.moshipack
+
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.MsgpackReader
 import com.squareup.moshi.MsgpackWriter

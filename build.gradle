@@ -1,5 +1,5 @@
 group "com.daveanthonythomas.moshipack"
-version "1.0"
+version "1.0.0-beta"
 
 buildscript {
     ext.kotlin_version = "1.2.21"
