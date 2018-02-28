@@ -1,0 +1,6 @@
+[submodule "example-android-app"]
+	path = example-android-app
+	url = https://github.com/davethomas11/MoshiPack_AndroidAppExample.git
+[submodule "test-servers/node"]
+	path = test-servers/node
+	url = https://github.com/davethomas11/MoshiPack_TestNodeServer.git
