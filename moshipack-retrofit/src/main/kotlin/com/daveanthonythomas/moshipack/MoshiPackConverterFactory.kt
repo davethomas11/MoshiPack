@@ -14,11 +14,24 @@ import java.util.Collections.emptySet
 import java.util.Collections.unmodifiableSet
 import com.squareup.moshi.JsonQualifier
 import java.util.*
+import com.sun.xml.internal.ws.streaming.XMLStreamReaderUtil.close
+import com.squareup.moshi.JsonDataException
+import com.squareup.moshi.JsonReader
+import okio.ByteString
+import okio.ByteString.decodeHex
+
+
+
+
 
 
 class MoshiPackConverterFactory(val moshiPack: MoshiPack = MoshiPack(),
                                 val failOnUnknown: Boolean = false,
                                 val serializeNull: Boolean = false) : Converter.Factory() {
+
+    companion object {
+        val UTF8_BOM = ByteString.decodeHex("EFBBBF")
+    }
 
     override fun responseBodyConverter(type: Type?,
                                        annotations: Array<out Annotation>?,
@@ -46,7 +59,16 @@ class MoshiPackConverterFactory(val moshiPack: MoshiPack = MoshiPack(),
     private class MoshiPackResponseBodyConverter<T>(private val adapter: JsonAdapter<T>) : Converter<ResponseBody, T> {
 
         override fun convert(value: ResponseBody?): T? = if (value != null) {
-            adapter.fromJson(MsgpackReader(value.source()))
+            val source = value.source()
+            value.use {
+                // Moshi has no document-level API so the responsibility of BOM skipping falls to whatever
+                // is delegating to it. Since it's a UTF-8-only library as well we only honor the UTF-8 BOM.
+                if (source.rangeEquals(0, UTF8_BOM)) {
+                    source.skip(UTF8_BOM.size().toLong())
+                }
+                val reader = MsgpackReader(source)
+                adapter.fromJson(reader)
+            }
         } else {
             null
         }
