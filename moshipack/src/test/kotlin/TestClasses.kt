@@ -19,3 +19,13 @@ data class Transients(var one: String, var three: String) {
 
 // Does not work with KotlinJsonAdapterFactory
 data class Transients2(var one:String, @Transient var two: String, var three: String)
+
+class Cat {
+    var breed: String = ""
+    var country: String? = null
+    var origin: String? = null
+    var bodytype: String? = null
+    var coat: String? = null
+    var pattern: String? = null
+    var image: String? = null
+}

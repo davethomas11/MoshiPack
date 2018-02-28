@@ -77,9 +77,9 @@ data class MsgpackFormatType(val tag: Byte, val maxSize: Long, val isFix: Boolea
     }
 
     fun readSize(source: BufferedSource, value: Byte): Long = if (isFix) (value - tag).toLong() else when (maxSize) {
-        MsgpackFormat.SIZE_8 -> source.readByte().toLong()
-        MsgpackFormat.SIZE_16 -> source.readShort().toLong()
-        MsgpackFormat.SIZE_32 -> source.readInt().toLong()
+        MsgpackFormat.SIZE_8 -> source.readByte().toLong() and 0xff
+        MsgpackFormat.SIZE_16 -> source.readShort().toLong() and 0xffff
+        MsgpackFormat.SIZE_32 -> source.readInt().toLong() and 0xffffffff
         else -> throw IllegalStateException("Unable to read size for tag type: 0x" + value.toString(16))
     }
 
