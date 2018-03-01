@@ -282,3 +282,10 @@ If you are using ProGuard you might need to add the following options:
     public <methods>;
 }
 ```
+
+
+Retrofit
+--------
+
+An example of using the retorfit adapter can be found here:
+https://github.com/davethomas11/MoshiPack_AndroidAppExample
