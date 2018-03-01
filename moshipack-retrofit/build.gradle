@@ -1,5 +1,3 @@
-apply plugin: 'kotlin'
-
 def retrofit_version = "2.3.0"
 
 dependencies {
@@ -20,5 +18,71 @@ compileTestKotlin {
 test {
     testLogging {
         events "passed", "skipped", "failed"
+    }
+}
+
+apply plugin: 'maven'
+apply plugin: 'signing'
+
+task javadocJar(type: Jar) {
+    classifier = 'javadoc'
+    from javadoc
+}
+
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+artifacts {
+    archives javadocJar, sourcesJar
+}
+
+signing {
+    sign configurations.archives
+}
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            beforeDeployment { deployment -> signing.signPom(deployment) }
+
+            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                authentication(userName: ossrhUsername, password: ossrhPassword)
+            }
+
+            snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+                authentication(userName: ossrhUsername, password: ossrhPassword)
+            }
+
+            pom.project {
+                name 'MoshiPack Retrofit Adapter'
+                packaging 'jar'
+                artifactId "moshipack-retrofit"
+                description 'MessagePack converter for Retrofit'
+                url 'https://github.com/davethomas11/MoshiPack'
+
+                scm {
+                    connection 'git@github.com:davethomas11/MoshiPack.git'
+                    developerConnection 'git@github.com:davethomas11/MoshiPack.git'
+                    url 'https://github.com/davethomas11/MoshiPack/tree/master/moshipack-retrofit'
+                }
+
+                licenses {
+                    license {
+                        name 'The Apache License, Version 2.0'
+                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id 'davethomas11'
+                        name 'Dave Anthony Thomas'
+                        email 'davethomas11@icloud.com'
+                    }
+                }
+            }
+        }
     }
 }
