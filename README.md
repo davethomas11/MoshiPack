@@ -15,6 +15,8 @@ Optional Retrofit support:
 implementation com.daveanthonythomas.moshipack:moshipack-retrofit:1.0.0-beta
 ```
 
+## About
+
 This is a Kotilin implementation of MessagePack serialization and deserialization built ontop of Moshi to take advantage of Moshi's type adapters and utilizes okio for reading and writing MessagePack bytes.
 
 The library is intended to be consumed in a Kotlin project, and is not intended for Java use.
