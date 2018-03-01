@@ -6,12 +6,12 @@ MoshiPack
 ### Gradle
 
 
-```groovy
+```
 implementation com.daveanthonythomas.moshipack:moshipack:1.0.0-beta
 ```
 
 Optional Retrofit support:
-```groovy
+```
 implementation com.daveanthonythomas.moshipack:moshipack-retrofit:1.0.0-beta
 ```
 
