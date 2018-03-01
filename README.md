@@ -3,6 +3,18 @@ MoshiPack
 
 [![CircleCI](https://circleci.com/gh/davethomas11/MoshiPack/tree/master.svg?style=svg)](https://circleci.com/gh/davethomas11/MoshiPack/tree/master) [![Release](https://jitpack.io/v/davethomas11/MoshiPack.svg)](https://jitpack.io/#davethomas11/MoshiPack)
 
+### Gradle
+
+
+```groovy
+implementation com.daveanthonythomas.moshipack:moshipack:1.0.0-beta
+```
+
+Optional Retrofit support:
+```groovy
+implementation com.daveanthonythomas.moshipack:moshipack-retrofit:1.0.0-beta
+```
+
 This is a Kotilin implementation of MessagePack serialization and deserialization built ontop of Moshi to take advantage of Moshi's type adapters and utilizes okio for reading and writing MessagePack bytes.
 
 The library is intended to be consumed in a Kotlin project, and is not intended for Java use.
@@ -89,10 +101,6 @@ See [MessagePack format spec](https://github.com/msgpack/msgpack/blob/master/spe
   <tr><td>map 32</td><td>11011111</td><td>0xdf</td><td>Yes</td></tr>
   <tr><td>negative fixint</td><td>111xxxxx</td><td>0xe0 - 0xff</td><td>Yes</td></tr>
 </table>
-----
-
-## Status -> Preparing for first release.
-Looking into distribution.
 
 ---
 
