@@ -40,44 +40,46 @@ signing {
     sign configurations.archives
 }
 
-uploadArchives {
-    repositories {
-        mavenDeployer {
-            beforeDeployment { deployment -> signing.signPom(deployment) }
+if (project.hasProperty("ossrhUsername")) {
+    uploadArchives {
+        repositories {
+            mavenDeployer {
+                beforeDeployment { deployment -> signing.signPom(deployment) }
 
-            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
-                authentication(userName: ossrhUsername, password: ossrhPassword)
-            }
-
-            snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
-                authentication(userName: ossrhUsername, password: ossrhPassword)
-            }
-
-            pom.project {
-                name 'MoshiPack'
-                packaging 'jar'
-                artifactId "moshipack"
-                description 'MessagePack implementation built on top of Moshi in Kotlin'
-                url 'https://github.com/davethomas11/MoshiPack'
-
-                scm {
-                    connection 'git@github.com:davethomas11/MoshiPack.git'
-                    developerConnection 'git@github.com:davethomas11/MoshiPack.git'
-                    url 'https://github.com/davethomas11/MoshiPack/tree/master/moshipack'
+                repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                    authentication(userName: ossrhUsername, password: ossrhPassword)
                 }
 
-                licenses {
-                    license {
-                        name 'The Apache License, Version 2.0'
-                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+                    authentication(userName: ossrhUsername, password: ossrhPassword)
+                }
+
+                pom.project {
+                    name 'MoshiPack'
+                    packaging 'jar'
+                    artifactId "moshipack"
+                    description 'MessagePack implementation built on top of Moshi in Kotlin'
+                    url 'https://github.com/davethomas11/MoshiPack'
+
+                    scm {
+                        connection 'git@github.com:davethomas11/MoshiPack.git'
+                        developerConnection 'git@github.com:davethomas11/MoshiPack.git'
+                        url 'https://github.com/davethomas11/MoshiPack/tree/master/moshipack'
                     }
-                }
 
-                developers {
-                    developer {
-                        id 'davethomas11'
-                        name 'Dave Anthony Thomas'
-                        email 'davethomas11@icloud.com'
+                    licenses {
+                        license {
+                            name 'The Apache License, Version 2.0'
+                            url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                        }
+                    }
+
+                    developers {
+                        developer {
+                            id 'davethomas11'
+                            name 'Dave Anthony Thomas'
+                            email 'davethomas11@icloud.com'
+                        }
                     }
                 }
             }
