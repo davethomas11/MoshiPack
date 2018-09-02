@@ -361,7 +361,7 @@ class MsgpackReader(private val source: BufferedSource) : JsonReader() {
             in MsgpackFormat.ARRAY -> peeked = PEEKED_BEGIN_ARRAY
             in MsgpackFormat.MAP -> peeked = PEEKED_BEGIN_OBJECT
             in MsgpackFormat.STR -> peeked = PEEKED_STRING
-            in 0..MsgpackFormat.FIX_INT_MAX,
+            in MsgpackFormat.FIX_INT_MIN..MsgpackFormat.FIX_INT_MAX,
             MsgpackFormat.UINT_8,
             MsgpackFormat.UINT_16,
             MsgpackFormat.UINT_32,
