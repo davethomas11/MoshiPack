@@ -365,6 +365,7 @@ class MsgpackReader(private val source: BufferedSource) : JsonReader() {
             MsgpackFormat.UINT_8,
             MsgpackFormat.UINT_16,
             MsgpackFormat.UINT_32,
+            MsgpackFormat.UINT_64,
             MsgpackFormat.INT_8,
             MsgpackFormat.INT_16,
             MsgpackFormat.INT_32,

@@ -7,7 +7,7 @@ class TestReadAndWrite {
     @Test
     fun writeAndReadSomeNumbers() {
 
-        val numbers = SomeNumbers(255, 55.5F, 3, 500.25)
+        val numbers = SomeNumbers(255, 55.5F, 3, 500.25, 1536094776000L)
 
         val buffer = MoshiPack.pack(numbers)
 
@@ -17,12 +17,13 @@ class TestReadAndWrite {
         assertEquals(55.5F, unmarshalled.num2)
         assertEquals(3.toShort(), unmarshalled.num3)
         assertEquals(500.25, unmarshalled.num4, 0.0)
+        assertEquals(1536094776000L, unmarshalled.num5)
     }
 
     @Test
     fun writeAndReadSomeNegativeNumbers() {
 
-        val numbers = SomeNumbers(-255, -55.5F, -3, -500.25)
+        val numbers = SomeNumbers(-255, -55.5F, -3, -500.25, -1536094776123L)
 
         val buffer = MoshiPack.pack(numbers)
 
@@ -32,6 +33,7 @@ class TestReadAndWrite {
         assertEquals(-55.5F, unmarshalled.num2)
         assertEquals((-3).toShort(), unmarshalled.num3)
         assertEquals(-500.25, unmarshalled.num4, 0.0)
+        assertEquals(-1536094776123L, unmarshalled.num5)
     }
 
     @Test
