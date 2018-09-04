@@ -374,7 +374,7 @@ class MsgpackReader(private val source: BufferedSource) : JsonReader() {
             MsgpackFormat.NIL -> peeked = PEEKED_NULL
             MsgpackFormat.TRUE -> peeked = PEEKED_TRUE
             MsgpackFormat.FALSE -> peeked = PEEKED_FALSE
-            else -> throw IllegalStateException("Msgpack format tag not yet supported: 0x" + c.toString(16))
+            else -> throw IllegalStateException("Msgpack format tag not yet supported: 0x${String.format("%02X", c)}")
         }
 
         currentTag = c
