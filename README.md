@@ -253,6 +253,19 @@ The static version of the API also can be passed a lambda to applied to the ```M
 MoshiPack.pack(someBytes) { add(customAdapter) }
 ```
 
+
+### Forcing integers to write as certain format
+- new in v1.0.1 ( not released yet )
+
+This will force all integers to be packed as the type given.
+By default the smallest message pack type is used for integers.
+```kotlin
+val moshiPack = moshiPack().apply {
+    writerOptions.writeAllIntsAs = MsgpackIntByte.INT_64
+}
+```
+
+
 ---
 
 Kotiln Support
