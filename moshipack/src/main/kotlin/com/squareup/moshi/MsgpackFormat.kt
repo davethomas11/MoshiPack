@@ -8,7 +8,6 @@ object MsgpackFormat {
     const val FIX_INT_MAX = 0x7f
     const val FIX_INT_MIN = -32
 
-
     const val SIZE_8 = 255L
     const val SIZE_16 = 65535L
     const val SIZE_32 = 4294967295

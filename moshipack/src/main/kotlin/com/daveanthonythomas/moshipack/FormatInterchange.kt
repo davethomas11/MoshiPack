@@ -1,9 +1,6 @@
 package com.daveanthonythomas.moshipack
 
-import com.squareup.moshi.JsonReader
-import com.squareup.moshi.JsonWriter
-import com.squareup.moshi.MsgpackReader
-import com.squareup.moshi.MsgpackWriter
+import com.squareup.moshi.*
 import okio.Buffer
 import okio.BufferedSink
 import okio.BufferedSource
@@ -58,9 +55,9 @@ sealed class Format {
         override fun reader(source: BufferedSource) = JsonReader.of(source).apply { isLenient = true }
         override fun writer(sink: BufferedSink) = JsonWriter.of(sink)
     }
-    class Msgpack: Format() {
+    class Msgpack(val writerOptions: MsgpackWriterOptions = MsgpackWriterOptions()): Format() {
         override fun reader(source: BufferedSource) = MsgpackReader(source)
-        override fun writer(sink: BufferedSink) = MsgpackWriter(sink)
+        override fun writer(sink: BufferedSink) = MsgpackWriter(sink).apply { writerOptions }
     }
 
     abstract fun reader(source: BufferedSource): JsonReader

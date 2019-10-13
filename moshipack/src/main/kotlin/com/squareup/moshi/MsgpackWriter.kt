@@ -13,6 +13,8 @@ import okio.Buffer
 
 class MsgpackWriter(private val sink: BufferedSink) : JsonWriter() {
 
+    var options = MsgpackWriterOptions()
+
     private var deferredName: String? = null
     private val pathBuffers = Array<Buffer?>(32) { null }
 
@@ -75,39 +77,48 @@ class MsgpackWriter(private val sink: BufferedSink) : JsonWriter() {
         if (promoteValueToName) {
             return name(value.toString())
         }
+        if (options.writeAllIntsAsFloats) {
+            return value(value.toDouble())
+        }
         writeDeferredName()
         beforeValue()
-        when (value) {
-            in MsgpackFormat.FIX_INT_MIN..MsgpackFormat.FIX_INT_MAX -> {
-                currentBuffer.writeByte(value.toInt())
+        if (options.writeAllIntsAs != null) {
+            options.writeAllIntsAs?.let {
+                it.writer.invoke(currentBuffer, it.byte, value)
             }
-            in MsgpackFormat.UINT_8_MIN..MsgpackFormat.UINT_8_MAX -> {
-                currentBuffer.writeByte(MsgpackFormat.UINT_8.toInt())
-                currentBuffer.writeByte(value.toInt())
-            }
-            in MsgpackFormat.UINT_16_MIN..MsgpackFormat.UINT_16_MAX -> {
-                currentBuffer.writeByte(MsgpackFormat.UINT_16.toInt())
-                currentBuffer.writeShort(value.toInt())
-            }
-            in MsgpackFormat.UINT_32_MIN..MsgpackFormat.UINT_32_MAX -> {
-                currentBuffer.writeByte(MsgpackFormat.UINT_32.toInt())
-                currentBuffer.writeInt(value.toInt())
-            }
-            in MsgpackFormat.UINT_32_MAX+1..Long.MAX_VALUE -> {
-                currentBuffer.writeByte(MsgpackFormat.UINT_64.toInt())
-                currentBuffer.writeLong(value)
-            }
-            in Short.MIN_VALUE..Short.MAX_VALUE -> {
-                currentBuffer.writeByte(MsgpackFormat.INT_16.toInt())
-                currentBuffer.writeShort(value.toInt())
-            }
-            in Int.MIN_VALUE..Int.MAX_VALUE -> {
-                currentBuffer.writeByte(MsgpackFormat.INT_32.toInt())
-                currentBuffer.writeInt(value.toInt())
-            }
-            in Long.MIN_VALUE..Long.MAX_VALUE -> {
-                currentBuffer.writeByte(MsgpackFormat.INT_64.toInt())
-                currentBuffer.writeLong(value)
+        } else {
+            when (value) {
+                in MsgpackFormat.FIX_INT_MIN..MsgpackFormat.FIX_INT_MAX -> {
+                    currentBuffer.writeByte(value.toInt())
+                }
+                in MsgpackFormat.UINT_8_MIN..MsgpackFormat.UINT_8_MAX -> {
+                    currentBuffer.writeByte(MsgpackFormat.UINT_8.toInt())
+                    currentBuffer.writeByte(value.toInt())
+                }
+                in MsgpackFormat.UINT_16_MIN..MsgpackFormat.UINT_16_MAX -> {
+                    currentBuffer.writeByte(MsgpackFormat.UINT_16.toInt())
+                    currentBuffer.writeShort(value.toInt())
+                }
+                in MsgpackFormat.UINT_32_MIN..MsgpackFormat.UINT_32_MAX -> {
+                    currentBuffer.writeByte(MsgpackFormat.UINT_32.toInt())
+                    currentBuffer.writeInt(value.toInt())
+                }
+                in MsgpackFormat.UINT_32_MAX + 1..Long.MAX_VALUE -> {
+                    currentBuffer.writeByte(MsgpackFormat.UINT_64.toInt())
+                    currentBuffer.writeLong(value)
+                }
+                in Short.MIN_VALUE..Short.MAX_VALUE -> {
+                    currentBuffer.writeByte(MsgpackFormat.INT_16.toInt())
+                    currentBuffer.writeShort(value.toInt())
+                }
+                in Int.MIN_VALUE..Int.MAX_VALUE -> {
+                    currentBuffer.writeByte(MsgpackFormat.INT_32.toInt())
+                    currentBuffer.writeInt(value.toInt())
+                }
+                in Long.MIN_VALUE..Long.MAX_VALUE -> {
+                    currentBuffer.writeByte(MsgpackFormat.INT_64.toInt())
+                    currentBuffer.writeLong(value)
+                }
             }
         }
         pathIndices[stackSize - 1]++
@@ -118,7 +129,7 @@ class MsgpackWriter(private val sink: BufferedSink) : JsonWriter() {
         if (value == null) return nullValue()
 
         // If its a whole number store it as an int type
-        if (value.toDouble() % 1 == 0.0) {
+        if (value.toDouble() % 1 == 0.0 && !options.writeAllIntsAsFloats) {
             return value(value.toLong())
         }
 
@@ -127,12 +138,15 @@ class MsgpackWriter(private val sink: BufferedSink) : JsonWriter() {
         }
         writeDeferredName()
         beforeValue()
-        when (value.toDouble()) {
-            in -Float.MAX_VALUE..Float.MAX_VALUE -> {
+        val writeFloatAs = options.writeAllFloatsAs
+        when {
+            (writeFloatAs == null && value.toDouble() in -Float.MAX_VALUE..Float.MAX_VALUE) ||
+            writeFloatAs == MsgpackFloatByte.FLOAT_32 -> {
                 currentBuffer.writeByte(MsgpackFormat.FLOAT_32.toInt())
                 currentBuffer.writeInt(java.lang.Float.floatToIntBits(value.toFloat()))
             }
-            in -Double.MAX_VALUE..Double.MAX_VALUE-> {
+            value.toDouble() in -Double.MAX_VALUE..Double.MAX_VALUE ||
+            writeFloatAs == MsgpackFloatByte.FLOAT_64 -> {
                 currentBuffer.writeByte(MsgpackFormat.FLOAT_64.toInt())
                 currentBuffer.writeLong(value.toDouble().toRawBits())
             }

@@ -6,7 +6,8 @@ import okio.BufferedSource
 import java.lang.reflect.Type
 
 class MoshiPack(private var builder: Moshi.Builder.() -> kotlin.Unit = {},
-                var moshi: Moshi = MoshiPack.moshi(builder)) {
+                var moshi: Moshi = MoshiPack.moshi(builder),
+                var messagePackWriterOptions: MsgpackWriterOptions = MsgpackWriterOptions()) {
 
     private val mpToJson by lazy {
         FormatInterchange(Format.Msgpack(), Format.Json())
@@ -17,11 +18,24 @@ class MoshiPack(private var builder: Moshi.Builder.() -> kotlin.Unit = {},
     }
 
     companion object {
-        inline fun <reified T> pack(value: T, moshi: Moshi): BufferedSource =
-                Buffer().also { moshi.adapter<T>(T::class.java).toJson(MsgpackWriter(it), value) }
+        inline fun <reified T> pack(value: T, moshiPack: MoshiPack): BufferedSource =
+                Buffer().also {
+                    moshiPack.moshi.adapter<T>(T::class.java)
+                            .toJson(MsgpackWriter(it).apply { options = moshiPack.messagePackWriterOptions }, value)
+                }
 
-        inline fun <reified T> pack(value: T, crossinline builder: Moshi.Builder.() -> Unit = {}): BufferedSource =
-                pack(value, moshi(builder))
+        inline fun <reified T> pack(value: T,
+                                    moshi: Moshi,
+                                    writerOptions: MsgpackWriterOptions = MsgpackWriterOptions()): BufferedSource =
+                Buffer().also {
+                    moshi.adapter<T>(T::class.java)
+                        .toJson(MsgpackWriter(it).apply { options = writerOptions }, value)
+                }
+
+        inline fun <reified T> pack(value: T,
+                                    crossinline builder: Moshi.Builder.() -> Unit = {},
+                                    writerOptions: MsgpackWriterOptions = MsgpackWriterOptions()): BufferedSource =
+                pack(value, moshi(builder), writerOptions)
 
         inline fun <reified T> unpack(source: BufferedSource, moshi: Moshi): T {
             val type: Type = object : TypeReference<T>() {}.type
@@ -40,16 +54,26 @@ class MoshiPack(private var builder: Moshi.Builder.() -> kotlin.Unit = {},
         inline fun moshi(crossinline builder: Moshi.Builder.() -> Unit = {}) =
                 Moshi.Builder().apply(builder).add(KotlinJsonAdapterFactory()).build()
 
-        fun msgpackToJson(bytes: ByteArray): String = msgpackToJson(Buffer().apply { write(bytes) })
-        fun msgpackToJson(source: BufferedSource) = FormatInterchange(Format.Msgpack(), Format.Json())
-                .transform(source).readUtf8()
+        fun msgpackToJson(bytes: ByteArray,
+                          writerOptions: MsgpackWriterOptions = MsgpackWriterOptions()): String =
+                msgpackToJson(Buffer().apply { write(bytes) }, writerOptions)
 
-        fun jsonToMsgpack(jsonString: String) = jsonToMsgpack(Buffer().apply { writeUtf8(jsonString) })
-        fun jsonToMsgpack(source: BufferedSource): BufferedSource = FormatInterchange(Format.Json(), Format.Msgpack())
-                .transform(source)
+        fun msgpackToJson(source: BufferedSource,
+                          writerOptions: MsgpackWriterOptions = MsgpackWriterOptions()) =
+                FormatInterchange(Format.Msgpack(writerOptions), Format.Json())
+                        .transform(source).readUtf8()
+
+        fun jsonToMsgpack(jsonString: String,
+                          writerOptions: MsgpackWriterOptions = MsgpackWriterOptions()) =
+                jsonToMsgpack(Buffer().apply { writeUtf8(jsonString) })
+
+        fun jsonToMsgpack(source: BufferedSource,
+                          writerOptions: MsgpackWriterOptions = MsgpackWriterOptions()): BufferedSource =
+                FormatInterchange(Format.Json(), Format.Msgpack(writerOptions))
+                        .transform(source)
     }
 
-    inline fun <reified T> pack(value: T) = MoshiPack.pack(value, moshi)
+    inline fun <reified T> pack(value: T) = MoshiPack.pack(value, this)
     inline fun <reified T> packToByteArray(value: T): ByteArray = pack(value).readByteArray()
     inline fun <reified T> unpack(bytes: ByteArray): T = unpack(Buffer().apply { write(bytes) })
     inline fun <reified T> unpack(source: BufferedSource): T = MoshiPack.unpack(source, moshi)
