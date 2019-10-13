@@ -7,7 +7,7 @@ import java.lang.reflect.Type
 
 class MoshiPack(private var builder: Moshi.Builder.() -> kotlin.Unit = {},
                 var moshi: Moshi = MoshiPack.moshi(builder),
-                var messagePackWriterOptions: MsgpackWriterOptions = MsgpackWriterOptions()) {
+                var writerOptions: MsgpackWriterOptions = MsgpackWriterOptions()) {
 
     private val mpToJson by lazy {
         FormatInterchange(Format.Msgpack(), Format.Json())
@@ -21,7 +21,7 @@ class MoshiPack(private var builder: Moshi.Builder.() -> kotlin.Unit = {},
         inline fun <reified T> pack(value: T, moshiPack: MoshiPack): BufferedSource =
                 Buffer().also {
                     moshiPack.moshi.adapter<T>(T::class.java)
-                            .toJson(MsgpackWriter(it).apply { options = moshiPack.messagePackWriterOptions }, value)
+                            .toJson(MsgpackWriter(it).apply { options = moshiPack.writerOptions }, value)
                 }
 
         inline fun <reified T> pack(value: T,

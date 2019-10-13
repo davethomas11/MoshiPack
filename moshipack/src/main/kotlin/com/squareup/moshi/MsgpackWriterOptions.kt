@@ -45,7 +45,7 @@ enum class MsgpackFloatByte(val byte: Byte) {
 }
 
 class MsgpackWriterOptions(
-        val writeAllIntsAs: MsgpackIntByte? = null,
-        val writeAllFloatsAs: MsgpackFloatByte? = null,
-        val writeAllIntsAsFloats: Boolean = false
+        var writeAllIntsAs: MsgpackIntByte? = null,
+        var writeAllFloatsAs: MsgpackFloatByte? = null,
+        var writeAllIntsAsFloats: Boolean = false
 )
