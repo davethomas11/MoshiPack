@@ -260,7 +260,7 @@ MoshiPack.pack(someBytes) { add(customAdapter) }
 This will force all integers to be packed as the type given.
 By default the smallest message pack type is used for integers.
 ```kotlin
-val moshiPack = moshiPack().apply {
+val moshiPack = MoshiPack().apply {
     writerOptions.writeAllIntsAs = MsgpackIntByte.INT_64
 }
 ```
