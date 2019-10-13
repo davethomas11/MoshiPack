@@ -1,6 +1,5 @@
 package com.squareup.moshi
 
-import okio.BufferedSink
 import com.squareup.moshi.JsonScope.DANGLING_NAME
 import com.squareup.moshi.JsonScope.EMPTY_ARRAY
 import com.squareup.moshi.JsonScope.EMPTY_DOCUMENT
@@ -8,10 +7,11 @@ import com.squareup.moshi.JsonScope.EMPTY_OBJECT
 import com.squareup.moshi.JsonScope.NONEMPTY_ARRAY
 import com.squareup.moshi.JsonScope.NONEMPTY_DOCUMENT
 import com.squareup.moshi.JsonScope.NONEMPTY_OBJECT
-import java.io.IOException
 import okio.Buffer
+import okio.BufferedSink
+import java.io.IOException
 
-class MsgpackWriter(private val sink: BufferedSink) : JsonWriter() {
+class MsgpackWriter(private val sink: BufferedSink, private val forcedOutputType: Byte? = null) : JsonWriter() {
 
     private var deferredName: String? = null
     private val pathBuffers = Array<Buffer?>(32) { null }
@@ -19,7 +19,7 @@ class MsgpackWriter(private val sink: BufferedSink) : JsonWriter() {
     private val currentIndex get() = stackSize - 1
     private val currentBuffer
         get() = if (currentIndex == 0) sink else pathBuffers[currentIndex]
-                    ?: throw IllegalStateException("Path buffer not initialized.")
+            ?: throw IllegalStateException("Path buffer not initialized.")
 
     init {
         pushScope(EMPTY_DOCUMENT)
@@ -77,6 +77,31 @@ class MsgpackWriter(private val sink: BufferedSink) : JsonWriter() {
         }
         writeDeferredName()
         beforeValue()
+        if (forcedOutputType == null) {
+            getSmallestType(value)
+        } else {
+            getForcedType(value)
+        }
+
+        pathIndices[stackSize - 1]++
+        return this
+    }
+
+    private fun getForcedType(value: Long) {
+        when (forcedOutputType) {
+            MsgpackFormat.UINT_64 -> {
+                currentBuffer.writeByte(MsgpackFormat.UINT_64.toInt())
+                currentBuffer.writeLong(value)
+            }
+            MsgpackFormat.INT_64 -> {
+                currentBuffer.writeByte(MsgpackFormat.INT_64.toInt())
+                currentBuffer.writeLong(value)
+            }
+            else -> throw RuntimeException("Target format not supported")
+        }
+    }
+
+    private fun getSmallestType(value: Long) {
         when (value) {
             in MsgpackFormat.FIX_INT_MIN..MsgpackFormat.FIX_INT_MAX -> {
                 currentBuffer.writeByte(value.toInt())
@@ -110,8 +135,6 @@ class MsgpackWriter(private val sink: BufferedSink) : JsonWriter() {
                 currentBuffer.writeLong(value)
             }
         }
-        pathIndices[stackSize - 1]++
-        return this
     }
 
     override fun value(value: Number?): JsonWriter {
