@@ -205,4 +205,60 @@ class TestMessagePackWriter {
         )
         assertArrayEquals(expected, bytes)
     }
+
+
+    @Test
+    fun fixedInt64WorksWithZero() {
+        // Single Int64 value
+        val expected = byteArrayOf(
+            0xd3.toByte(), 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+        )
+        val bytes =
+            MoshiPack(moshi = Moshi.Builder().build()).packToByteArray(0x00, MsgpackFormat.INT_64)
+        assertArrayEquals(expected, bytes)
+    }
+
+    @Test
+    fun fixedInt64WorksWithMaxLong() {
+        // uInt64 format byte followed by Long.MAX_VALUE in bytes
+        val expected = byteArrayOf(
+            0xd3.toByte(),
+            0x7F, 0xFF.toByte(), 0xFF.toByte(), 0xFF.toByte(),
+            0xFF.toByte(), 0xFF.toByte(), 0xFF.toByte(), 0xFF.toByte()
+        )
+        val bytes = MoshiPack(moshi = Moshi.Builder().build()).packToByteArray(
+            Long.MAX_VALUE,
+            MsgpackFormat.INT_64
+        )
+        assertArrayEquals(expected, bytes)
+    }
+
+    @Test
+    fun fixedInt64WorksWithMaxInt() {
+        // Int64 format byte value followed by value Int.MAX_VALUE in bytes
+        val expected = byteArrayOf(
+            0xd3.toByte(),
+            0x00, 0x00, 0x00, 0x00, 0x7F, 0xFF.toByte(), 0xFF.toByte(), 0xFF.toByte()
+        )
+        val bytes = MoshiPack(moshi = Moshi.Builder().build()).packToByteArray(
+            Int.MAX_VALUE,
+            MsgpackFormat.INT_64
+        )
+        assertArrayEquals(expected, bytes)
+    }
+
+    @Test
+    fun fixedInt64WorksWithSingleElementArray() {
+        // fixarray format byte, Int64 format byte, zero value bytes
+        val expected = byteArrayOf(
+            0x91.toByte(),
+            0xd3.toByte(), 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00
+        )
+        val bytes = MoshiPack(moshi = Moshi.Builder().build()).packToByteArray(
+            byteArrayOf(0x00),
+            MsgpackFormat.INT_64
+        )
+        assertArrayEquals(expected, bytes)
+    }
 }

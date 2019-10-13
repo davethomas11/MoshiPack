@@ -77,17 +77,28 @@ class MsgpackWriter(private val sink: BufferedSink, private val forcedOutputType
         }
         writeDeferredName()
         beforeValue()
-        println("value for non null long {$value}")
-        if (forcedOutputType != null && forcedOutputType != MsgpackFormat.UINT_64) {
-            throw RuntimeException("Target format not supported")
-        } else if (forcedOutputType == MsgpackFormat.UINT_64) {
-            currentBuffer.writeByte(MsgpackFormat.UINT_64.toInt())
-            currentBuffer.writeLong(value)
-        } else {
+        if (forcedOutputType == null) {
             getSmallestType(value)
+        } else {
+            getForcedType(value)
         }
+
         pathIndices[stackSize - 1]++
         return this
+    }
+
+    private fun getForcedType(value: Long) {
+        when (forcedOutputType) {
+            MsgpackFormat.UINT_64 -> {
+                currentBuffer.writeByte(MsgpackFormat.UINT_64.toInt())
+                currentBuffer.writeLong(value)
+            }
+            MsgpackFormat.INT_64 -> {
+                currentBuffer.writeByte(MsgpackFormat.INT_64.toInt())
+                currentBuffer.writeLong(value)
+            }
+            else -> throw RuntimeException("Target format not supported")
+        }
     }
 
     private fun getSmallestType(value: Long) {
