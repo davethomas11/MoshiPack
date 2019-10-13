@@ -1,7 +1,9 @@
 import com.daveanthonythomas.moshipack.MoshiPack
 import com.squareup.moshi.Moshi
+import com.squareup.moshi.MsgpackFormat
 import com.squareup.moshi.MsgpackWriter
 import okio.Buffer
+import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
@@ -99,5 +101,108 @@ class TestMessagePackWriter {
         assertEquals("82a3${"one".hex}a141a5${"three".hex}a143", buffer.readByteString().hex())
     }
 
-}
+    @Test
+    fun fixedUint64WorksWithZero() {
+        // Single uInt64 value
+        val expected = byteArrayOf(
+            0xcf.toByte(), 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+        )
+        val bytes =
+            MoshiPack(moshi = Moshi.Builder().build()).packToByteArray(0x00, MsgpackFormat.UINT_64)
+        assertArrayEquals(expected, bytes)
+    }
 
+    @Test
+    fun fixedUint64WorksWithMaxLong() {
+        // uInt64 format byte followed by Long.MAX_VALUE in bytes
+        val expected = byteArrayOf(
+            0xcf.toByte(),
+            0x7F, 0xFF.toByte(), 0xFF.toByte(), 0xFF.toByte(),
+            0xFF.toByte(), 0xFF.toByte(), 0xFF.toByte(), 0xFF.toByte()
+        )
+        val bytes = MoshiPack(moshi = Moshi.Builder().build()).packToByteArray(
+            Long.MAX_VALUE,
+            MsgpackFormat.UINT_64
+        )
+        assertArrayEquals(expected, bytes)
+    }
+
+    @Test
+    fun fixedUint64WorksWithMaxInt() {
+        // uInt64 format byte value followed by value Int.MAX_VALUE in bytes
+        val expected = byteArrayOf(
+            0xcf.toByte(),
+            0x00, 0x00, 0x00, 0x00, 0x7F, 0xFF.toByte(), 0xFF.toByte(), 0xFF.toByte()
+        )
+        val bytes = MoshiPack(moshi = Moshi.Builder().build()).packToByteArray(
+            Int.MAX_VALUE,
+            MsgpackFormat.UINT_64
+        )
+        assertArrayEquals(expected, bytes)
+    }
+
+    @Test
+    fun fixedUint64WorksWithSingleElementArray() {
+        // fixarray format byte, uInt64 format byte, zero value bytes
+        val expected = byteArrayOf(
+            0x91.toByte(),
+            0xcf.toByte(), 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00
+        )
+        val bytes = MoshiPack(moshi = Moshi.Builder().build()).packToByteArray(
+            byteArrayOf(0x00),
+            MsgpackFormat.UINT_64
+        )
+        assertArrayEquals(expected, bytes)
+    }
+
+    @Test
+    fun arrayOfUint64WorksWithFixedSize() {
+        // fixarray format byte, uInt64 format byte, value bytes, uInt64 format byte, value bytes
+        val expected = byteArrayOf(
+            0x92.toByte(),
+            0xcf.toByte(), 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01,
+            0xcf.toByte(), 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01
+        )
+        val bytes = MoshiPack(moshi = Moshi.Builder().build()).packToByteArray(
+            byteArrayOf(0x01, 0x01),
+            MsgpackFormat.UINT_64
+        )
+        assertArrayEquals(expected, bytes)
+    }
+
+    @Test
+    fun mapOfUint64WorksWithFixedSize() {
+        val expected = byteArrayOf(
+            0x82.toByte(),
+            0xA1.toByte(), 0x31,
+            0xcf.toByte(), 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03,
+            0xA1.toByte(), 0x32,
+            0xcf.toByte(), 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x04
+        )
+        val bytes = MoshiPack(moshi = Moshi.Builder().build()).packToByteArray(
+            mapOf(1 to 0x03, 2 to 0x04),
+            MsgpackFormat.UINT_64
+        )
+        assertArrayEquals(expected, bytes)
+    }
+
+
+    @Test
+    fun mapOfSmallestSizeWithSingleElement() {
+        val expected = byteArrayOf(-127, -95, 49, 3)
+        val bytes = MoshiPack(moshi = Moshi.Builder().build()).packToByteArray(
+            mapOf(1 to 0x03)
+        )
+        assertArrayEquals(expected, bytes)
+    }
+
+    @Test
+    fun mapOfSmallestSizeWithTwoElement() {
+        val expected = byteArrayOf(-126, -95, 49, 3, -95, 50, 4)
+        val bytes = MoshiPack(moshi = Moshi.Builder().build()).packToByteArray(
+            mapOf(1 to 0x03, 2 to 0x04)
+        )
+        assertArrayEquals(expected, bytes)
+    }
+}

@@ -17,8 +17,8 @@ class MoshiPack(private var builder: Moshi.Builder.() -> kotlin.Unit = {},
     }
 
     companion object {
-        inline fun <reified T> pack(value: T, moshi: Moshi): BufferedSource =
-                Buffer().also { moshi.adapter<T>(T::class.java).toJson(MsgpackWriter(it), value) }
+        inline fun <reified T> pack(value: T, moshi: Moshi, format: Byte? = null): BufferedSource =
+                Buffer().also { moshi.adapter<T>(T::class.java).toJson(MsgpackWriter(it, format), value) }
 
         inline fun <reified T> pack(value: T, crossinline builder: Moshi.Builder.() -> Unit = {}): BufferedSource =
                 pack(value, moshi(builder))
@@ -49,8 +49,8 @@ class MoshiPack(private var builder: Moshi.Builder.() -> kotlin.Unit = {},
                 .transform(source)
     }
 
-    inline fun <reified T> pack(value: T) = MoshiPack.pack(value, moshi)
-    inline fun <reified T> packToByteArray(value: T): ByteArray = pack(value).readByteArray()
+    inline fun <reified T> pack(value: T, format: Byte? = null) = MoshiPack.pack(value, moshi, format)
+    inline fun <reified T> packToByteArray(value: T, format: Byte? = null): ByteArray = pack(value, format).readByteArray()
     inline fun <reified T> unpack(bytes: ByteArray): T = unpack(Buffer().apply { write(bytes) })
     inline fun <reified T> unpack(source: BufferedSource): T = MoshiPack.unpack(source, moshi)
 
