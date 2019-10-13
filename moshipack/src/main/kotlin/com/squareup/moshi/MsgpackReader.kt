@@ -361,10 +361,11 @@ class MsgpackReader(private val source: BufferedSource) : JsonReader() {
             in MsgpackFormat.ARRAY -> peeked = PEEKED_BEGIN_ARRAY
             in MsgpackFormat.MAP -> peeked = PEEKED_BEGIN_OBJECT
             in MsgpackFormat.STR -> peeked = PEEKED_STRING
-            in 0..MsgpackFormat.FIX_INT_MAX,
+            in MsgpackFormat.FIX_INT_MIN..MsgpackFormat.FIX_INT_MAX,
             MsgpackFormat.UINT_8,
             MsgpackFormat.UINT_16,
             MsgpackFormat.UINT_32,
+            MsgpackFormat.UINT_64,
             MsgpackFormat.INT_8,
             MsgpackFormat.INT_16,
             MsgpackFormat.INT_32,
@@ -374,7 +375,7 @@ class MsgpackReader(private val source: BufferedSource) : JsonReader() {
             MsgpackFormat.NIL -> peeked = PEEKED_NULL
             MsgpackFormat.TRUE -> peeked = PEEKED_TRUE
             MsgpackFormat.FALSE -> peeked = PEEKED_FALSE
-            else -> throw IllegalStateException("Msgpack format tag not yet supported: 0x" + c.toString(16))
+            else -> throw IllegalStateException("Msgpack format tag not yet supported: 0x${String.format("%02X", c)}")
         }
 
         currentTag = c
