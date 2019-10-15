@@ -7,12 +7,12 @@ MoshiPack
 
 
 ```
-implementation com.daveanthonythomas.moshipack:moshipack:1.0.0-beta
+implementation com.daveanthonythomas.moshipack:moshipack:1.0.1
 ```
 
 Optional Retrofit support:
 ```
-implementation com.daveanthonythomas.moshipack:moshipack-retrofit:1.0.0-beta
+implementation com.daveanthonythomas.moshipack:moshipack-retrofit:1.0.1
 ```
 
 ## About
@@ -255,7 +255,7 @@ MoshiPack.pack(someBytes) { add(customAdapter) }
 
 
 ### Forcing integers to write as certain format
-- new in v1.0.1 ( not released yet )
+- new in v1.0.1 
 
 This will force all integers to be packed as the type given.
 By default the smallest message pack type is used for integers.
